@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- PWA & SEO Meta tags -->
+    <meta name="theme-color" content="#ff00ff" />
+    <meta name="description" content="Best Friends Forever - A beautiful scrapbook and tribute template." />
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="Best Friends Forever" />
+    <meta property="og:description" content="A beautiful scrapbook and tribute template." />
+    <meta property="og:image" content="https://ik.imagekit.io/19imy4f1u/lite_1777280263479_wAl-iCRHJI.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    <link rel="manifest" href="/manifest.json" />
+    <title>Best Friends Forever</title>
+  </head>
+  <body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;" oncopy="return false;" oncut="return false;" onpaste="return false;">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Aggressive inline security to hide HTML if devtools opens
+      (function() {
+        const _clearHTML = () => {
+          if (document.getElementById('root')) {
+            document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:20vh; font-family:sans-serif;">Nice try! Source code is protected.</h1>';
+          }
+        };
+
+        // Continually hit debugger
+        setInterval(function() {
+          var before = new Date().getTime();
+          debugger;
+          var after = new Date().getTime();
+          if (after - before > 100) {
+             _clearHTML();
+          }
+        }, 1000);
+      })();
+      
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((registration) => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }).catch((err) => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
+

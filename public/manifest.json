@@ -1,0 +1,16 @@
+{
+  "short_name": "Besties",
+  "name": "Best Friends Forever",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ff00ff",
+  "background_color": "#050505"
+}
