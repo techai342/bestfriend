@@ -152,6 +152,43 @@ export default function App() {
            className="relative z-10 flow-root"
         >
 
+          {/* Header Title */}
+          <motion.div
+             variants={{
+                hidden: { opacity: 0, y: -20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 1.2, ease: "easeOut" } }
+             }}
+             className="mb-8 sm:mb-12 mt-16 sm:mt-0 relative z-20"
+          >
+            {/* Tom & Jerry Sticker Header Image */}
+            <motion.img
+               initial={{ opacity: 0, rotate: 10, scale: 0.8 }}
+               animate={{ opacity: 1, rotate: -5, scale: 1 }}
+               transition={{ duration: 1.5, delay: 0.5 }}
+               src="https://ik.imagekit.io/19imy4f1u/lite_1777281639765_55fR5xSpF.png"
+               className="absolute -top-12 sm:-top-24 right-0 sm:right-12 w-[180px] sm:w-[320px] lg:w-[450px] z-20 object-contain drop-shadow-xl pointer-events-none"
+               alt="Tom and Jerry"
+            />
+
+            <div className="inline-block bg-[#f1ebe4] text-[#8a7e72] px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-left shadow-sm relative z-30">Personal Dedication</div>
+            <h1 className="font-serif text-[#1a1a1a] select-none text-left block relative z-30" style={{ lineHeight: 0.9 }}>
+              <span className="text-5xl sm:text-7xl lg:text-[8rem] font-bold inline-block align-middle tracking-tighter">
+                love 
+                <motion.span
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  className="inline-block ml-2 sm:ml-4 align-middle"
+                >
+                  <Heart className="w-8 h-8 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-[#c28e7e] fill-[#c28e7e] mb-2 sm:mb-4" />
+                </motion.span>
+              </span>
+              <br/>
+              <span className="text-4xl sm:text-6xl lg:text-[7rem] ml-10 sm:ml-24 lg:ml-32 inline-block tracking-tighter italic text-[#c28e7e] relative">
+                you
+              </span>
+            </h1>
+          </motion.div>
+
           {/* First Float Image */}
           <motion.div
              variants={{
@@ -184,42 +221,6 @@ export default function App() {
              />
           </motion.div>
 
-          {/* Header Title */}
-          <motion.div
-             variants={{
-                hidden: { opacity: 0, y: -20 },
-                visible: { opacity: 1, y: 0, transition: { duration: 1.2, ease: "easeOut" } }
-             }}
-             className="mb-8 sm:mb-12 mt-16 sm:mt-0 relative z-20"
-          >
-            <div className="inline-block bg-[#f1ebe4] text-[#8a7e72] px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-left shadow-sm">Personal Dedication</div>
-            <h1 className="font-serif text-[#1a1a1a] select-none text-left block" style={{ lineHeight: 0.9 }}>
-              <span className="text-5xl sm:text-7xl lg:text-[8rem] font-bold inline-block align-middle tracking-tighter">
-                love 
-                <motion.span
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                  className="inline-block ml-2 sm:ml-4 align-middle"
-                >
-                  <Heart className="w-8 h-8 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-[#c28e7e] fill-[#c28e7e] mb-2 sm:mb-4" />
-                </motion.span>
-              </span>
-              <br/>
-              <span className="text-4xl sm:text-6xl lg:text-[7rem] ml-10 sm:ml-24 lg:ml-32 inline-block tracking-tighter italic text-[#c28e7e] relative">
-                you
-                {/* Tom & Jerry Sticker */}
-                <motion.img
-                   initial={{ opacity: 0, rotate: 10, scale: 0.8 }}
-                   animate={{ opacity: 1, rotate: -5, scale: 1 }}
-                   transition={{ duration: 1.5, delay: 0.5 }}
-                   src="https://ik.imagekit.io/19imy4f1u/lite_1777281639765_55fR5xSpF.png"
-                   className="absolute -top-24 -right-16 sm:-top-32 sm:-right-24 lg:-top-48 lg:-right-36 w-[250px] sm:w-[400px] lg:w-[550px] z-20 object-contain drop-shadow-lg pointer-events-none"
-                   alt="Tom and Jerry"
-                />
-              </span>
-            </h1>
-          </motion.div>
-
           {/* Text content wrapping around both floats */}
           <div className="text-[13px] sm:text-[15px] lg:text-[16px] text-[#4a4540] italic leading-[1.6] sm:leading-[1.7] text-left sm:text-justify max-w-none font-medium">
             {words.map((word, i) => (
@@ -242,7 +243,7 @@ export default function App() {
                   hidden: { opacity: 0 },
                   visible: { opacity: 1, transition: { duration: 2, delay: 1 } }
                }}
-               className="pt-4 sm:pt-8 font-cursive text-[22px] sm:text-4xl lg:text-5xl text-[#c28e7e] leading-[2] sm:leading-[2.5] text-left drop-shadow-sm opacity-90 pb-8 clear-none relative"
+               className="pt-4 sm:pt-16 mt-8 sm:mt-16 font-cursive text-[22px] sm:text-4xl lg:text-5xl text-[#c28e7e] leading-[2] sm:leading-[2.5] text-left drop-shadow-sm opacity-90 pb-8 clear-both w-full block relative"
             >
               Love you best friend ❤️ <br />
               Love you best friend ❤️ <br />
