@@ -283,14 +283,23 @@ export default function App() {
               alt="Butterflies"
            />
            <div className="inline-block w-16 h-[2px] bg-[#c28e7e] opacity-50 relative z-10"></div>
-           <p className="font-serif italic font-bold text-2xl sm:text-3xl mt-4 text-[#8a7e72] relative z-10">forever & always</p>
+           <motion.p 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 1, delay: 0.2 }}
+             className="font-serif italic font-bold text-2xl sm:text-3xl mt-4 text-[#8a7e72] relative z-10"
+           >
+             forever & always
+           </motion.p>
         </motion.div>
 
         {/* NEW SECTION: Artistic Circular Layout */}
         <motion.div 
           initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 1.5, ease: "easeOut" }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
           className="mt-20 pt-16 border-t-2 border-dashed border-[#e8e2d9] relative w-full flex flex-col items-center"
         >
           {/* Top Hearts / Pulse Line */}
@@ -305,7 +314,13 @@ export default function App() {
           </div>
 
           {/* Circular Frames Container */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16 w-full px-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16 w-full px-4"
+          >
             
             {/* Left Circular Frame */}
             <div className="relative group">
@@ -318,7 +333,15 @@ export default function App() {
 
             {/* Center Text Area */}
             <div className="flex flex-col items-center justify-center text-center max-w-sm mt-4 md:mt-0">
-               <h2 className="font-cursive text-5xl sm:text-6xl font-bold mb-6 text-[#1a1a1a] drop-shadow-sm tracking-wide">Best Friends</h2>
+               <motion.h2 
+                 initial={{ opacity: 0, scale: 0.8 }}
+                 whileInView={{ opacity: 1, scale: 1 }}
+                 viewport={{ once: true }}
+                 transition={{ duration: 0.8, delay: 0.4 }}
+                 className="font-cursive text-5xl sm:text-6xl font-bold mb-6 text-[#1a1a1a] drop-shadow-sm tracking-wide"
+               >
+                 Best Friends
+               </motion.h2>
                <div className="flex items-center gap-3">
                   <span className="text-3xl filter drop-shadow-sm rotate-[-10deg]">🦋</span>
                   <span className="text-4xl filter drop-shadow-sm animate-pulse">✨</span>
@@ -334,45 +357,125 @@ export default function App() {
               <Heart className="absolute -top-4 -right-4 w-10 h-10 sm:w-14 sm:h-14 text-red-500 fill-red-500 drop-shadow-lg rotate-[20deg] animate-bounce" style={{animationDuration: '2.5s'}} />
               <div className="absolute bottom-4 -right-6 text-3xl opacity-80 filter drop-shadow hover:scale-125 transition-transform duration-300">🥺</div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Bottom Dictionary & Quotes */}
-          <div className="flex flex-col md:flex-row items-start justify-between w-full mt-16 gap-10 md:gap-16 px-2 sm:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="flex flex-col md:flex-row items-start justify-between w-full mt-16 gap-10 md:gap-16 px-2 sm:px-8"
+          >
             
-            <div className="flex-1 bg-[#fdfaf6] p-6 rounded-2xl border border-[#e8e2d9] shadow-sm">
-              <h3 className="font-serif text-6xl text-[#1a1a1a] mb-2 leading-none tracking-tighter">LOVE</h3>
-              <p className="font-cursive text-2xl text-[#8a7e72] mb-6">Can't stop loving you!</p>
+            <motion.div 
+              initial={{ x: -30, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="flex-1 bg-[#fdfaf6] p-6 rounded-2xl border border-[#e8e2d9] shadow-sm"
+            >
+              <motion.h3 
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="font-serif text-6xl text-[#1a1a1a] mb-2 leading-none tracking-tighter"
+              >
+                LOVE
+              </motion.h3>
+              <motion.p 
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="font-cursive text-2xl text-[#8a7e72] mb-6"
+              >
+                Can't stop loving you!
+              </motion.p>
               <div className="relative">
                 <div className="absolute -left-2 -top-2 text-4xl text-[#c28e7e] font-serif opacity-30">"</div>
-                <p className="font-serif italic text-lg sm:text-xl text-[#4a4540] border-l-2 border-[#c28e7e] pl-5 leading-relaxed">
+                <motion.p 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                  className="font-serif italic text-lg sm:text-xl text-[#4a4540] border-l-2 border-[#c28e7e] pl-5 leading-relaxed"
+                >
                   I love you not only for what you are, but for what I am when I am with you.
-                </p>
+                </motion.p>
               </div>
-              <div className="mt-8 font-cursive text-4xl text-center text-[#1a1a1a] transform -rotate-3 hover:rotate-3 transition-transform duration-500">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1, delay: 0.8 }}
+                className="mt-8 font-cursive text-4xl text-center text-[#1a1a1a] transform -rotate-3 hover:rotate-3 transition-transform duration-500"
+              >
                 Sweet besties
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-            <div className="flex-1 bg-white p-6 rounded-2xl border border-[#e8e2d9] shadow-sm">
+            <motion.div 
+               initial={{ x: 30, opacity: 0 }}
+               whileInView={{ x: 0, opacity: 1 }}
+               viewport={{ once: true }}
+               transition={{ duration: 0.8, delay: 0.8 }}
+               className="flex-1 bg-white p-6 rounded-2xl border border-[#e8e2d9] shadow-sm"
+            >
                <div className="flex items-end gap-3 mb-6">
-                 <h3 className="font-serif text-5xl text-[#1a1a1a] leading-none">love:</h3>
-                 <span className="text-[#8a7e72] mb-1 font-mono text-sm">[luv] - n.</span>
+                 <motion.h3 
+                   initial={{ opacity: 0, y: -10 }}
+                   whileInView={{ opacity: 1, y: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ duration: 0.6, delay: 0.2 }}
+                   className="font-serif text-5xl text-[#1a1a1a] leading-none"
+                 >
+                   love:
+                 </motion.h3>
+                 <motion.span 
+                   initial={{ opacity: 0 }}
+                   whileInView={{ opacity: 1 }}
+                   viewport={{ once: true }}
+                   transition={{ duration: 0.6, delay: 0.4 }}
+                   className="text-[#8a7e72] mb-1 font-mono text-sm"
+                 >
+                   [luv] - n.
+                 </motion.span>
                </div>
                <div className="space-y-4">
-                 <p className="font-sans text-sm sm:text-base text-[#4a4540] leading-relaxed">
+                 <motion.p 
+                   initial={{ opacity: 0, x: 20 }}
+                   whileInView={{ opacity: 1, x: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ duration: 0.6, delay: 0.6 }}
+                   className="font-sans text-sm sm:text-base text-[#4a4540] leading-relaxed"
+                 >
                    <strong className="text-[#1a1a1a]">1.</strong> an intense affection for another person based on personal or familial ties.
-                 </p>
-                 <p className="font-sans text-sm sm:text-base text-[#4a4540] leading-relaxed">
+                 </motion.p>
+                 <motion.p 
+                   initial={{ opacity: 0, x: 20 }}
+                   whileInView={{ opacity: 1, x: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ duration: 0.6, delay: 0.8 }}
+                   className="font-sans text-sm sm:text-base text-[#4a4540] leading-relaxed"
+                 >
                    <strong className="text-[#1a1a1a]">2.</strong> the deep tenderness, affection, and concern felt for a person with whom one has a relationship.
-                 </p>
+                 </motion.p>
                </div>
-               <div className="flex justify-center mt-6 gap-6 text-[#c28e7e]">
+               <motion.div 
+                 initial={{ opacity: 0, y: 10 }}
+                 whileInView={{ opacity: 1, y: 0 }}
+                 viewport={{ once: true }}
+                 transition={{ duration: 0.6, delay: 1 }}
+                 className="flex justify-center mt-6 gap-6 text-[#c28e7e]"
+               >
                   <span className="flex items-center gap-2 font-cursive text-xl"><Heart className="w-5 h-5"/> forever</span>
                   <span className="flex items-center gap-2 font-cursive text-xl">always <Heart className="w-5 h-5"/></span>
-               </div>
-            </div>
+               </motion.div>
+            </motion.div>
 
-          </div>
+          </motion.div>
 
           <div className="w-full mt-10 flex items-center justify-between px-2 sm:px-12 text-[#e11d48]">
             <Heart className="w-8 h-8 fill-transparent text-[#e11d48]" />
@@ -381,7 +484,13 @@ export default function App() {
           </div>
 
           {/* NEW SECTION: Love You Diagonal Photo Frames */}
-          <div className="w-full mt-24 mb-16 bg-gradient-to-br from-[#4a4a4a] via-[#1a1a1a] to-black rounded-3xl p-4 sm:p-8 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+          <motion.div 
+            initial={{ opacity: 0, y: 50, rotateX: 10 }}
+            whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 1.2 }}
+            className="w-full mt-24 mb-16 bg-gradient-to-br from-[#4a4a4a] via-[#1a1a1a] to-black rounded-3xl p-4 sm:p-8 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
+          >
               
               {/* Background Glows to simulate the lighting in the image */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-20 blur-3xl pointer-events-none"></div>
@@ -404,9 +513,15 @@ export default function App() {
               <div className="grid grid-cols-2 grid-rows-2 gap-4 sm:gap-8 relative z-10 items-center">
                   {/* Top Left: LOVE Text */}
                   <div className="flex items-end justify-center sm:justify-end text-center sm:text-right h-full pb-4 sm:pb-8">
-                     <span className="font-serif text-[4.5rem] sm:text-[7rem] lg:text-[9rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-300 to-gray-600 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] leading-[0.75] italic font-bold">
+                     <motion.span 
+                       initial={{ opacity: 0, scale: 0.8, x: -30 }}
+                       whileInView={{ opacity: 1, scale: 1, x: 0 }}
+                       viewport={{ once: true }}
+                       transition={{ duration: 1, delay: 0.3 }}
+                       className="font-serif text-[4.5rem] sm:text-[7rem] lg:text-[9rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-300 to-gray-600 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] leading-[0.75] italic font-bold"
+                     >
                        L<span className="text-[2.5rem] sm:text-[4.5rem] lg:text-[6rem]">ove</span>
-                     </span>
+                     </motion.span>
                   </div>
 
                   {/* Top Right: Image Frame */}
@@ -428,15 +543,27 @@ export default function App() {
 
                   {/* Bottom Right: YOU Text */}
                   <div className="flex items-start justify-center sm:justify-start text-center sm:text-left h-full pt-4 sm:pt-8">
-                     <span className="font-serif text-[4.5rem] sm:text-[7rem] lg:text-[9rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-300 to-gray-600 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] leading-[0.75] italic font-bold">
+                     <motion.span 
+                       initial={{ opacity: 0, scale: 0.8, x: 30 }}
+                       whileInView={{ opacity: 1, scale: 1, x: 0 }}
+                       viewport={{ once: true }}
+                       transition={{ duration: 1, delay: 0.5 }}
+                       className="font-serif text-[4.5rem] sm:text-[7rem] lg:text-[9rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-300 to-gray-600 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] leading-[0.75] italic font-bold"
+                     >
                        Y<span className="text-[2.5rem] sm:text-[4.5rem] lg:text-[6rem]">ou</span>
-                     </span>
+                     </motion.span>
                   </div>
               </div>
-          </div>
+          </motion.div>
 
           {/* NEW SECTION: Premium Luxury Circular Friendship Frames */}
-          <div className="w-full mt-24 mb-16 bg-[#fffaf5] relative shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-4 sm:p-12 flex items-center justify-center min-h-[500px] sm:min-h-[700px] overflow-hidden">
+          <motion.div 
+             initial={{ opacity: 0, scale: 0.95 }}
+             whileInView={{ opacity: 1, scale: 1 }}
+             viewport={{ once: true, margin: "-100px" }}
+             transition={{ duration: 1.5 }}
+             className="w-full mt-24 mb-16 bg-[#fffaf5] relative shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-4 sm:p-12 flex items-center justify-center min-h-[500px] sm:min-h-[700px] overflow-hidden"
+          >
              {/* Luxury Red Inner Border */}
              <div className="absolute inset-3 sm:inset-6 border-[3px] sm:border-[6px] border-[#d32f2f] pointer-events-none z-10 shadow-[inset_0_0_20px_rgba(211,47,47,0.1)] rounded-sm"></div>
              
@@ -444,11 +571,17 @@ export default function App() {
              <div className="absolute inset-5 sm:inset-10 border-[1px] sm:border-[2px] border-[#d4af37] pointer-events-none z-10 opacity-60 rounded-sm"></div>
 
              {/* Top Left: Best Friend */}
-             <div className="absolute top-10 left-8 sm:top-16 sm:left-16 z-20 flex items-center gap-1 sm:gap-3 opacity-90 transform -rotate-3">
+             <motion.div 
+               initial={{ opacity: 0, x: -30, rotate: -3 }}
+               whileInView={{ opacity: 1, x: 0, rotate: -3 }}
+               viewport={{ once: true }}
+               transition={{ duration: 1, delay: 0.3 }}
+               className="absolute top-10 left-8 sm:top-16 sm:left-16 z-20 flex items-center gap-1 sm:gap-3 opacity-90"
+             >
                 <span className="font-cursive text-2xl sm:text-5xl text-[#0a2342]">Best</span>
                 <span className="text-xl sm:text-4xl filter drop-shadow-md">🧸💞</span>
                 <span className="font-cursive text-2xl sm:text-5xl text-[#0a2342]">Friend</span>
-             </div>
+             </motion.div>
 
              {/* Top Right: Floral Accent */}
              <div className="absolute top-8 right-6 sm:top-14 sm:right-14 z-20 text-4xl sm:text-7xl filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]">
@@ -478,15 +611,27 @@ export default function App() {
              </div>
 
              {/* Bottom Right: Best Friend */}
-             <div className="absolute bottom-10 right-8 sm:bottom-16 sm:right-16 z-20 flex items-center gap-1 sm:gap-3 opacity-90 transform -rotate-3">
+             <motion.div 
+               initial={{ opacity: 0, x: 30, rotate: -3 }}
+               whileInView={{ opacity: 1, x: 0, rotate: -3 }}
+               viewport={{ once: true }}
+               transition={{ duration: 1, delay: 0.8 }}
+               className="absolute bottom-10 right-8 sm:bottom-16 sm:right-16 z-20 flex items-center gap-1 sm:gap-3 opacity-90"
+             >
                 <span className="font-cursive text-2xl sm:text-5xl text-[#0a2342]">Best</span>
                 <span className="text-xl sm:text-4xl filter drop-shadow-md">🧸💞</span>
                 <span className="font-cursive text-2xl sm:text-5xl text-[#0a2342]">Friend</span>
-             </div>
-          </div>
+             </motion.div>
+          </motion.div>
 
           {/* NEW SECTION: Green Border Scrapbook Layout */}
-          <div className="w-full mt-24 mb-16 bg-[#fdfbf7] relative min-h-[650px] sm:min-h-[1000px] border-[12px] sm:border-[24px] border-[#00c853] shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden">
+          <motion.div 
+             initial={{ opacity: 0, y: 60 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true, margin: "-100px" }}
+             transition={{ duration: 1.2 }}
+             className="w-full mt-24 mb-16 bg-[#fdfbf7] relative min-h-[650px] sm:min-h-[1000px] border-[12px] sm:border-[24px] border-[#00c853] shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden"
+          >
              
              {/* Inner border for premium look */}
              <div className="absolute inset-2 sm:inset-4 border-[2px] sm:border-[4px] border-dashed border-[#00c853] opacity-50 z-0 pointer-events-none"></div>
@@ -501,9 +646,15 @@ export default function App() {
                     <Heart className="absolute top-1 sm:top-2 right-6 sm:right-16 w-3 h-3 sm:w-5 sm:h-5 text-[#ff1493] fill-[#ff1493] -rotate-6 z-0" />
                 </div>
                 
-                <p className="font-serif italic text-[11px] sm:text-[26px] text-[#1a1a1a] leading-relaxed sm:leading-snug text-center font-bold px-1 sm:px-2 drop-shadow-sm">
+                <motion.p 
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="font-serif italic text-[11px] sm:text-[26px] text-[#1a1a1a] leading-relaxed sm:leading-snug text-center font-bold px-1 sm:px-2 drop-shadow-sm"
+                >
                     "I love you not only for what you are, but for what I am when I am with you."
-                </p>
+                </motion.p>
 
                 {/* Decorative Nameplate */}
                 <div className="mt-4 sm:mt-10 w-[95%] h-6 sm:h-12 border-[1.5px] sm:border-[3px] border-[#1a1a1a] rounded-[50px] relative flex items-center justify-center bg-white shadow-sm">
@@ -567,10 +718,16 @@ export default function App() {
                     <span className="absolute -right-3 sm:-right-8 text-[#1a1a1a] opacity-80 transform rotate-45 scale-x-[-1] text-[10px] sm:text-2xl filter grayscale">🌿</span>
                 </div>
              </div>
-          </div>
+          </motion.div>
 
           {/* NEW SECTION: Dark Neon Crowns Layout */}
-          <div className="w-full mt-24 mb-16 bg-[#050505] relative min-h-[700px] sm:min-h-[1050px] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-6 sm:p-12 overflow-hidden flex flex-col justify-between">
+          <motion.div 
+              initial={{ opacity: 0, rotateX: -10, y: 60 }}
+              whileInView={{ opacity: 1, rotateX: 0, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1.5 }}
+              className="w-full mt-24 mb-16 bg-[#050505] relative min-h-[700px] sm:min-h-[1050px] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-6 sm:p-12 overflow-hidden flex flex-col justify-between"
+          >
               
               {/* Realistic Rose Decoration */}
               <div className="absolute bottom-16 -left-12 sm:bottom-32 sm:left-10 z-30 transform -rotate-[25deg] hover:rotate-[0deg] transition-transform duration-700 origin-bottom-left">
@@ -633,20 +790,32 @@ export default function App() {
                  </div>
               </div>
 
-          </div>
+          </motion.div>
 
           {/* Decorative Music Player & Quotes Section */}
-          <div className="w-full mt-24 mb-8 flex flex-col lg:flex-row justify-between items-center lg:items-end relative gap-12 text-[#1a1a1a] px-4">
+          <motion.div 
+             initial={{ opacity: 0, scale: 0.8 }}
+             whileInView={{ opacity: 1, scale: 1 }}
+             viewport={{ once: true, margin: "-50px" }}
+             transition={{ duration: 1.2, delay: 0.2 }}
+             className="w-full mt-24 mb-8 flex flex-col lg:flex-row justify-between items-center lg:items-end relative gap-12 text-[#1a1a1a] px-4"
+          >
              
              {/* Left Quote */}
-             <div className="flex flex-col items-center lg:items-start opacity-90 text-center lg:text-left">
+             <motion.div 
+               initial={{ opacity: 0, x: -30 }}
+               whileInView={{ opacity: 1, x: 0 }}
+               viewport={{ once: true }}
+               transition={{ duration: 0.8, delay: 0.3 }}
+               className="flex flex-col items-center lg:items-start opacity-90 text-center lg:text-left"
+             >
                <span className="font-serif font-black tracking-widest text-xl sm:text-2xl">CHOCOLATE BOY</span>
                <p className="text-[11px] sm:text-xs font-bold tracking-tight mt-1">I DON'T HAVE TIME TO HATE PEOPLE</p>
                <p className="text-[10px] sm:text-[11px] font-bold tracking-tight lg:ml-4">BCZ.. I'M BUSY LOVING PEOPLE WHO LOVE ME</p>
                <div className="flex gap-1.5 mt-2 lg:ml-4">
                   {[...Array(8)].map((_, i) => <div key={i} className="w-1.5 h-1.5 bg-[#1a1a1a] rounded-full"></div>)}
                </div>
-             </div>
+             </motion.div>
 
              {/* Center Music Player & Crown */}
              <div className="flex flex-col items-center gap-8 opacity-90">
@@ -679,15 +848,21 @@ export default function App() {
              </div>
 
              {/* Right Quote */}
-             <div className="flex flex-col items-center lg:items-end opacity-90 text-center lg:text-right">
+             <motion.div 
+               initial={{ opacity: 0, x: 30 }}
+               whileInView={{ opacity: 1, x: 0 }}
+               viewport={{ once: true }}
+               transition={{ duration: 0.8, delay: 0.5 }}
+               className="flex flex-col items-center lg:items-end opacity-90 text-center lg:text-right"
+             >
                <span className="font-serif font-black tracking-widest text-xl sm:text-2xl">FAMOUS BOY</span>
                <p className="text-[11px] sm:text-xs font-bold tracking-tight mt-1">I DON'T HAVE TIME TO HATE PEOPLE</p>
                <p className="text-[10px] sm:text-[11px] font-bold tracking-tight lg:mr-4">BCZ.. I'M BUSY LOVING PEOPLE WHO LOVE ME</p>
                <div className="flex gap-1.5 mt-2 lg:mr-4">
                   {[...Array(8)].map((_, i) => <div key={i} className="w-1.5 h-1.5 bg-[#1a1a1a] rounded-full"></div>)}
                </div>
-             </div>
-          </div>
+             </motion.div>
+          </motion.div>
 
         </motion.div>
 
