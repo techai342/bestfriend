@@ -171,81 +171,215 @@ export default function App() {
 
       {/* Link Generator Modal */}
       {isGeneratorOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md relative animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 font-sans">
+          <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-md relative flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300">
+            {/* Background Decorations */}
+            <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-pink-100 rounded-bl-full opacity-50 mix-blend-multiply pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-32 sm:h-32 bg-rose-100 rounded-tr-full opacity-50 mix-blend-multiply pointer-events-none"></div>
+
+            {/* Close Button */}
             <button 
               onClick={() => setIsGeneratorOpen(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl leading-none"
+              className="absolute top-4 right-4 bg-white/80 backdrop-blur-md rounded-full w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:bg-gray-100 text-2xl leading-none z-50 transition-colors shadow-sm"
             >
               &times;
             </button>
-            <h2 className="text-xl font-bold mb-4 font-sans text-gray-800">Generate Custom Link</h2>
+
+            {/* Header Container (Sticky) */}
+            <div className="pt-6 sm:pt-8 pb-2 text-center relative z-10 shrink-0">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-gray-800 italic">Create Your Bond</h2>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2 px-4">Upload photos and names to generate a custom link.</p>
+            </div>
             
-            <div className="space-y-4 font-sans">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name 1</label>
-                <input 
-                  type="text" 
-                  value={genName1} 
-                  onChange={(e) => setGenName1(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:border-pink-500"
-                  placeholder="e.g. murru"
-                />
+            {/* Scrollable Body Container */}
+            <div className="px-5 sm:px-8 py-4 overflow-y-auto scrollbar-hide flex-1 min-h-0 relative z-10">
+              <div className="space-y-4 pb-2">
+              
+              {/* Person 1 */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group/card transition-colors">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-pink-100/50 rounded-bl-full opacity-50 pointer-events-none"></div>
+                <div className="flex items-center gap-2 mb-3 relative z-10">
+                   <Crown className="w-4 h-4 text-pink-500" />
+                   <h3 className="font-bold text-gray-800 text-sm">Person 1</h3>
+                </div>
+                <div className="flex gap-3 sm:gap-4 relative z-10">
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Name</label>
+                    <input 
+                      type="text" 
+                      value={genName1} 
+                      onChange={(e) => setGenName1(e.target.value)}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 sm:py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all shadow-sm"
+                      placeholder="E.g. Murru"
+                    />
+                  </div>
+                  <div className="w-20 sm:w-24 shrink-0">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Photo</label>
+                    <div className="relative group">
+                        <input 
+                          type="file" 
+                          id="file1"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                             const file = e.target.files?.[0];
+                             if (!file) return;
+                             
+                             const btn = document.getElementById('uploadText1');
+                             if(btn) btn.innerHTML = '<span class="animate-pulse">...</span>';
+                             
+                             const formData = new FormData();
+                             formData.append('file', file);
+                             formData.append('fileName', `${genName1 || 'person1'}_${Date.now()}`);
+                             formData.append('publicKey', 'public_W8pXprjPHYrYwlWMf811dtUm2Og=');
+
+                             try {
+                                 const response = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+                                     method: 'POST',
+                                     headers: { 'Authorization': 'Basic ' + btoa('private_Wu/w/ZEmydjv/FbRgVKOffRxtNY=' + ':') },
+                                     body: formData
+                                 });
+                                 const data = await response.json();
+                                 if (data.url) setGenImg1(data.url);
+                             } catch (err) {
+                                 alert("Upload failed.");
+                             } finally {
+                                 if(btn) btn.innerHTML = 'CHANGE';
+                             }
+                          }}
+                        />
+                        <label htmlFor="file1" className="cursor-pointer block relative rounded-xl overflow-hidden shadow-sm aspect-square border-2 border-dashed border-gray-300 hover:border-pink-400 transition-all hover:scale-105 bg-white">
+                           {genImg1 ? (
+                              <>
+                                 <img src={genImg1} className="w-full h-full object-cover group-hover:opacity-60 transition-opacity" alt="Preview 1" />
+                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+                                     <span id="uploadText1" className="text-white font-bold text-[9px] uppercase tracking-wider bg-black/40 px-2 py-1 rounded-full">CHANGE</span>
+                                 </div>
+                              </>
+                           ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 group-hover:text-pink-500 transition-colors">
+                                 <span className="text-2xl leading-none mb-1">+</span>
+                                 <span id="uploadText1" className="text-[9px] font-bold uppercase tracking-wider">UPLOAD</span>
+                              </div>
+                           )}
+                        </label>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image 1 URL</label>
-                <input 
-                  type="text" 
-                  value={genImg1} 
-                  onChange={(e) => setGenImg1(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:border-pink-500"
-                  placeholder="https://..."
-                />
+
+              {/* Person 2 */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group/card transition-colors">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-rose-100/50 rounded-bl-full opacity-50 pointer-events-none"></div>
+                <div className="flex items-center gap-2 mb-3 relative z-10">
+                   <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+                   <h3 className="font-bold text-gray-800 text-sm">Person 2</h3>
+                </div>
+                <div className="flex gap-3 sm:gap-4 relative z-10">
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Name</label>
+                    <input 
+                      type="text" 
+                      value={genName2} 
+                      onChange={(e) => setGenName2(e.target.value)}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 sm:py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all shadow-sm"
+                      placeholder="E.g. Sundari"
+                    />
+                  </div>
+                  <div className="w-20 sm:w-24 shrink-0">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Photo</label>
+                    <div className="relative group">
+                        <input 
+                          type="file" 
+                          id="file2"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                             const file = e.target.files?.[0];
+                             if (!file) return;
+                             
+                             const btn = document.getElementById('uploadText2');
+                             if(btn) btn.innerHTML = '<span class="animate-pulse">...</span>';
+                             
+                             const formData = new FormData();
+                             formData.append('file', file);
+                             formData.append('fileName', `${genName2 || 'person2'}_${Date.now()}`);
+                             formData.append('publicKey', 'public_W8pXprjPHYrYwlWMf811dtUm2Og=');
+
+                             try {
+                                 const response = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+                                     method: 'POST',
+                                     headers: { 'Authorization': 'Basic ' + btoa('private_Wu/w/ZEmydjv/FbRgVKOffRxtNY=' + ':') },
+                                     body: formData
+                                 });
+                                 const data = await response.json();
+                                 if (data.url) setGenImg2(data.url);
+                             } catch (err) {
+                                 alert("Upload failed.");
+                             } finally {
+                                 if(btn) btn.innerHTML = 'CHANGE';
+                             }
+                          }}
+                        />
+                        <label htmlFor="file2" className="cursor-pointer block relative rounded-xl overflow-hidden shadow-sm aspect-square border-2 border-dashed border-gray-300 hover:border-rose-400 transition-all hover:scale-105 bg-white">
+                           {genImg2 ? (
+                              <>
+                                 <img src={genImg2} className="w-full h-full object-cover group-hover:opacity-60 transition-opacity" alt="Preview 2" />
+                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+                                     <span id="uploadText2" className="text-white font-bold text-[9px] uppercase tracking-wider bg-black/40 px-2 py-1 rounded-full">CHANGE</span>
+                                 </div>
+                              </>
+                           ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 group-hover:text-rose-500 transition-colors">
+                                 <span className="text-2xl leading-none mb-1">+</span>
+                                 <span id="uploadText2" className="text-[9px] font-bold uppercase tracking-wider">UPLOAD</span>
+                              </div>
+                           )}
+                        </label>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name 2</label>
-                <input 
-                  type="text" 
-                  value={genName2} 
-                  onChange={(e) => setGenName2(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:border-pink-500"
-                  placeholder="e.g. sundari"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image 2 URL</label>
-                <input 
-                  type="text" 
-                  value={genImg2} 
-                  onChange={(e) => setGenImg2(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:border-pink-500"
-                  placeholder="https://..."
-                />
+
+              {/* Generated Link Box - Inside scrollable area */}
+              {generatedLink && (
+                <div className="mt-2 p-3 sm:p-4 bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 rounded-2xl relative animate-in slide-in-from-bottom-4 zoom-in-95 duration-500 shadow-inner">
+                  <p className="text-[10px] font-bold text-pink-500 uppercase tracking-wider mb-2">Your Magic Link</p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input 
+                      type="text" 
+                      readOnly 
+                      value={generatedLink}
+                      className="flex-1 w-full bg-white border border-pink-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-600 outline-none focus:ring-2 focus:ring-pink-400 transition-all"
+                    />
+                    <button 
+                      onClick={copyToClipboard}
+                      className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        isCopied 
+                          ? 'bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)]' 
+                          : 'bg-white border border-pink-200 text-pink-600 hover:bg-pink-50 shadow-sm'
+                      }`}
+                    >
+                      {isCopied ? 'Copied!' : 'Copy Link'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               </div>
             </div>
 
-            <div className="mt-6">
+            {/* Footer Container (Sticky) */}
+            <div className="p-4 sm:p-6 pb-6 sm:pb-8 relative z-10 shrink-0 bg-white/95 backdrop-blur-md border-t border-gray-50 shadow-[0_-10px_20px_rgba(255,255,255,0.8)]">
               <button 
                 onClick={generateLink}
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-4 rounded transition-colors"
+                className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all shadow-[0_10px_20px_rgba(244,63,94,0.3)] hover:shadow-[0_10px_25px_rgba(244,63,94,0.4)] transform hover:-translate-y-0.5 text-sm sm:text-base flex items-center justify-center gap-2 group"
               >
-                Generate Link
+                <span>Spark Magic</span>
+                <span className="text-xl group-hover:animate-bounce">✨</span>
               </button>
             </div>
 
-            {generatedLink && (
-              <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded relative">
-                <p className="text-xs text-gray-600 break-all pr-8 h-12 overflow-y-auto">{generatedLink}</p>
-                <button 
-                  onClick={copyToClipboard}
-                  className={`absolute top-2 right-2 px-2 py-1 text-xs rounded font-medium transition-colors ${
-                    isCopied ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {isCopied ? 'Copied!' : 'Copy'}
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}
