@@ -41,6 +41,12 @@ const ImageFrame = ({ src, alt, rotateClass, name }: { src: string; alt: string;
 };
 
 export default function App() {
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const name1 = searchParams.get('n1') || searchParams.get('name1') || "murru";
+  const img1 = searchParams.get('i1') || searchParams.get('img1') || "https://ik.imagekit.io/19imy4f1u/lite_1777432062255_b4O1TkoKUT.png";
+  const name2 = searchParams.get('n2') || searchParams.get('name2') || "sundari";
+  const img2 = searchParams.get('i2') || searchParams.get('img2') || "https://ik.imagekit.io/19imy4f1u/lite_1777432145117_9DRz3sAoev.png";
+
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
 
@@ -198,10 +204,10 @@ export default function App() {
              className="float-right clear-right w-[40%] max-w-[150px] sm:max-w-[260px] ml-4 sm:ml-8 mb-4 sm:mb-8 z-30 relative"
           >
              <ImageFrame 
-               src="https://ik.imagekit.io/19imy4f1u/lite_1777280263479_wAl-iCRHJI.png" 
-               alt="Ahad" 
+               src={img1} 
+               alt={name1} 
                rotateClass="rotate-[2deg] sm:rotate-[4deg]" 
-               name="Ahad"
+               name={name1}
              />
           </motion.div>
 
@@ -214,10 +220,10 @@ export default function App() {
              className="float-right clear-right w-[42%] max-w-[160px] sm:max-w-[280px] ml-4 sm:ml-8 mb-4 sm:mb-8 z-30 relative"
           >
              <ImageFrame 
-               src="https://ik.imagekit.io/shaban/SHABAN-1768573679202_aZrkl8hRt.jpg" 
-               alt="Saqib" 
+               src={img2} 
+               alt={name2} 
                rotateClass="-rotate-[2deg] sm:-rotate-[3deg]" 
-               name="Saqib"
+               name={name2}
              />
           </motion.div>
 
@@ -325,7 +331,7 @@ export default function App() {
             {/* Left Circular Frame */}
             <div className="relative group">
               <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#fb7185] p-1 shadow-[0_0_25px_rgba(251,113,133,0.6)] group-hover:scale-105 transition-transform duration-500 bg-white">
-                 <img src="https://ik.imagekit.io/19imy4f1u/lite_1777280263479_wAl-iCRHJI.png" className="w-full h-full object-cover rounded-full" alt="Ahad" />
+                 <img src={img1} className="w-full h-full object-cover rounded-full" alt={name1} />
               </div>
               <Heart className="absolute -bottom-2 -left-4 w-10 h-10 sm:w-14 sm:h-14 text-red-500 fill-red-500 drop-shadow-lg rotate-[-20deg] animate-bounce" style={{animationDuration: '3s'}} />
               <div className="absolute top-4 -left-6 text-3xl opacity-80 filter drop-shadow hover:scale-125 transition-transform duration-300">🥺</div>
@@ -352,7 +358,7 @@ export default function App() {
             {/* Right Circular Frame */}
             <div className="relative group">
               <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#fb7185] p-1 shadow-[0_0_25px_rgba(251,113,133,0.6)] group-hover:scale-105 transition-transform duration-500 bg-white">
-                 <img src="https://ik.imagekit.io/shaban/SHABAN-1768573679202_aZrkl8hRt.jpg" className="w-full h-full object-cover rounded-full" alt="Shaban" />
+                 <img src={img2} className="w-full h-full object-cover rounded-full" alt={name2} />
               </div>
               <Heart className="absolute -top-4 -right-4 w-10 h-10 sm:w-14 sm:h-14 text-red-500 fill-red-500 drop-shadow-lg rotate-[20deg] animate-bounce" style={{animationDuration: '2.5s'}} />
               <div className="absolute bottom-4 -right-6 text-3xl opacity-80 filter drop-shadow hover:scale-125 transition-transform duration-300">🥺</div>
@@ -529,7 +535,7 @@ export default function App() {
                      {/* Blurred inner drop shadow simulation */}
                      <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.3)] pointer-events-none z-20"></div>
                      <div className="w-full aspect-[3/4] bg-gray-100 overflow-hidden relative">
-                       <img src="https://ik.imagekit.io/19imy4f1u/lite_1777280263479_wAl-iCRHJI.png" className="w-full h-full object-cover" alt="Ahad" />
+                       <img src={img1} className="w-full h-full object-cover" alt={name1} />
                      </div>
                   </div>
 
@@ -537,7 +543,7 @@ export default function App() {
                   <div className="bg-white p-2 pb-8 sm:p-3 sm:pb-10 shadow-[0_10px_25px_rgba(0,0,0,0.8)] transform -rotate-2 hover:scale-105 transition-transform duration-300 relative z-10 w-[90%] mx-auto">
                      <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.3)] pointer-events-none z-20"></div>
                      <div className="w-full aspect-[3/4] bg-gray-100 overflow-hidden relative">
-                        <img src="https://ik.imagekit.io/shaban/SHABAN-1768573679202_aZrkl8hRt.jpg" className="w-full h-full object-cover" alt="Shaban" />
+                        <img src={img2} className="w-full h-full object-cover" alt={name2} />
                      </div>
                   </div>
 
@@ -593,14 +599,14 @@ export default function App() {
                 {/* Left Profile */}
                 <div className="w-[160px] h-[160px] sm:w-[320px] sm:h-[320px] rounded-full p-1 sm:p-2 bg-gradient-to-br from-[#d4af37] via-[#fff] to-[#d4af37] shadow-[0_20px_40px_rgba(0,0,0,0.6)] z-20 transform hover:scale-105 transition-transform duration-500">
                     <div className="w-full h-full rounded-full overflow-hidden border-[3px] sm:border-[6px] border-white bg-gray-100">
-                        <img src="https://ik.imagekit.io/19imy4f1u/lite_1777280263479_wAl-iCRHJI.png" className="w-full h-full object-cover" alt="Ahad" />
+                        <img src={img1} className="w-full h-full object-cover" alt={name1} />
                     </div>
                 </div>
 
                 {/* Right Profile */}
                 <div className="w-[160px] h-[160px] sm:w-[320px] sm:h-[320px] rounded-full p-1 sm:p-2 bg-gradient-to-bl from-[#d32f2f] via-[#fff] to-[#d32f2f] shadow-[0_25px_50px_rgba(0,0,0,0.7)] z-30 transform hover:scale-105 transition-transform duration-500 -ml-10 sm:-ml-20 mt-16 sm:mt-24">
                     <div className="w-full h-full rounded-full overflow-hidden border-[3px] sm:border-[6px] border-white bg-gray-100">
-                        <img src="https://ik.imagekit.io/shaban/SHABAN-1768573679202_aZrkl8hRt.jpg" className="w-full h-full object-cover" alt="Saqib" />
+                        <img src={img2} className="w-full h-full object-cover" alt={name2} />
                     </div>
                 </div>
              </div>
@@ -659,7 +665,7 @@ export default function App() {
                 {/* Decorative Nameplate */}
                 <div className="mt-4 sm:mt-10 w-[95%] h-6 sm:h-12 border-[1.5px] sm:border-[3px] border-[#1a1a1a] rounded-[50px] relative flex items-center justify-center bg-white shadow-sm">
                     <span className="absolute -left-3 sm:-left-8 text-[#1a1a1a] opacity-80 transform -rotate-45 text-[10px] sm:text-2xl filter grayscale">🌿</span>
-                    <span className="font-serif font-black italic text-[10px] sm:text-[20px] text-[#1a1a1a] tracking-[0.15em] sm:tracking-[0.2em] relative z-10">AHAD</span>
+                    <span className="font-serif font-black italic text-[10px] sm:text-[20px] text-[#1a1a1a] tracking-[0.15em] sm:tracking-[0.2em] relative z-10 uppercase">{name1.toUpperCase()}</span>
                     {/* Stickers */}
                     <span className="absolute -top-3 sm:-top-6 left-2 sm:left-4 text-[14px] sm:text-[32px] transform -rotate-12 z-20 drop-shadow-sm">👑</span>
                     <span className="absolute -bottom-2 sm:-bottom-4 right-4 sm:right-8 text-[12px] sm:text-[24px] transform rotate-12 z-20 drop-shadow-sm">✨</span>
@@ -671,7 +677,7 @@ export default function App() {
              <div className="absolute top-[8%] right-[4%] sm:top-16 sm:right-16 w-[42%] sm:w-[360px] z-10 group">
                 <div className="border-[3px] sm:border-[8px] border-[#1a1a1a] p-1 sm:p-2 bg-white shadow-[4px_4px_8px_rgba(0,0,0,0.3)] sm:shadow-[15px_15px_25px_rgba(0,0,0,0.4)] aspect-square sm:aspect-[4/5] relative transform md:group-hover:scale-105 transition-transform duration-300">
                     <div className="w-full h-full overflow-hidden border border-gray-200">
-                        <img src="https://ik.imagekit.io/19imy4f1u/lite_1777280263479_wAl-iCRHJI.png" className="w-full h-full object-cover filter grayscale contrast-[1.1] brightness-[1.05]" alt="Ahad Grayscale" />
+                        <img src={img1} className="w-full h-full object-cover filter grayscale contrast-[1.1] brightness-[1.05]" alt={`${name1} Grayscale`} />
                     </div>
                 </div>
              </div>
@@ -692,7 +698,7 @@ export default function App() {
              <div className="absolute bottom-[6%] left-[4%] sm:bottom-16 sm:left-16 w-[45%] sm:w-[400px] z-10 group">
                 <div className="border-[3px] sm:border-[8px] border-[#1a1a1a] p-1 sm:p-2 bg-white shadow-[4px_4px_8px_rgba(0,0,0,0.3)] sm:shadow-[15px_15px_25px_rgba(0,0,0,0.4)] aspect-[3/4] sm:aspect-[4/5] relative transform md:group-hover:scale-105 transition-transform duration-300">
                     <div className="w-full h-full overflow-hidden border border-gray-200">
-                        <img src="https://ik.imagekit.io/shaban/SHABAN-1768573679202_aZrkl8hRt.jpg" className="w-full h-full object-cover filter grayscale contrast-[1.1] brightness-[1.05]" alt="Shaban Grayscale" />
+                        <img src={img2} className="w-full h-full object-cover filter grayscale contrast-[1.1] brightness-[1.05]" alt={`${name2} Grayscale`} />
                     </div>
                     <div className="absolute bottom-1 sm:bottom-4 left-0 w-full flex justify-center z-20">
                         <span className="bg-black text-white text-[7px] sm:text-sm font-sans font-bold px-2 sm:px-4 py-0.5 sm:py-1 tracking-[0.2em] bg-opacity-90 shadow-md">FOREVERBESTIE</span>
@@ -711,7 +717,7 @@ export default function App() {
                 {/* Decorative Nameplate */}
                 <div className="mt-3 sm:mt-6 w-[90%] h-6 sm:h-12 border-[1.5px] sm:border-[3px] border-[#1a1a1a] rounded-[50px] relative flex items-center justify-center bg-white shadow-sm">
                     <span className="absolute -left-3 sm:-left-8 text-[#1a1a1a] opacity-80 transform -rotate-45 text-[10px] sm:text-2xl filter grayscale">🌿</span>
-                    <span className="font-serif font-black italic text-[10px] sm:text-[20px] text-[#1a1a1a] tracking-[0.15em] sm:tracking-[0.2em] relative z-10">SAQIB</span>
+                    <span className="font-serif font-black italic text-[10px] sm:text-[20px] text-[#1a1a1a] tracking-[0.15em] sm:tracking-[0.2em] relative z-10 uppercase">{name2.toUpperCase()}</span>
                     {/* Stickers */}
                     <span className="absolute -top-3 sm:-top-6 right-1 sm:right-2 text-[14px] sm:text-[30px] transform rotate-[20deg] z-20 drop-shadow-sm">🎀</span>
                     <span className="absolute -bottom-2 sm:-bottom-4 left-2 sm:left-4 text-[12px] sm:text-[24px] transform -rotate-12 z-20 drop-shadow-sm">💫</span>
@@ -753,11 +759,11 @@ export default function App() {
                  {/* Neon Frame Profile */}
                  <div className="w-48 h-48 sm:w-[350px] sm:h-[350px] rounded-full border-[3px] border-white shadow-[0_0_20px_#ff00ff,inset_0_0_15px_#ff00ff] relative z-10 bg-transparent flex items-center justify-center group-hover:shadow-[0_0_40px_#ff00ff,inset_0_0_30px_#ff00ff] transition-shadow duration-500">
                     <div className="w-[92%] h-[92%] rounded-full overflow-hidden opacity-95 border-[2px] border-white/20">
-                        <img src="https://ik.imagekit.io/19imy4f1u/lite_1777280263479_wAl-iCRHJI.png" className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-700" alt="Ahad" />
+                        <img src={img1} className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-700" alt={name1} />
                     </div>
                     {/* Glowing Name Tag */}
                     <div className="absolute -bottom-6 sm:-bottom-12 font-sans font-black italic text-white tracking-[0.3em] uppercase drop-shadow-[0_0_15px_#ff00ff] text-xl sm:text-4xl">
-                        AHAD
+                        {name1.toUpperCase()}
                     </div>
                  </div>
               </div>
@@ -781,11 +787,11 @@ export default function App() {
                  {/* Neon Frame Profile */}
                  <div className="w-48 h-48 sm:w-[350px] sm:h-[350px] rounded-full border-[3px] border-white shadow-[0_0_20px_#ff00ff,inset_0_0_15px_#ff00ff] relative z-10 bg-transparent flex items-center justify-center group-hover:shadow-[0_0_40px_#ff00ff,inset_0_0_30px_#ff00ff] transition-shadow duration-500">
                     <div className="w-[92%] h-[92%] rounded-full overflow-hidden opacity-95 border-[2px] border-white/20">
-                        <img src="https://ik.imagekit.io/shaban/SHABAN-1768573679202_aZrkl8hRt.jpg" className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-700" alt="Saqib" />
+                        <img src={img2} className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-700" alt={name2} />
                     </div>
                     {/* Glowing Name Tag */}
                     <div className="absolute -bottom-6 sm:-bottom-12 font-sans font-black italic text-white tracking-[0.3em] uppercase drop-shadow-[0_0_15px_#ff00ff] text-xl sm:text-4xl">
-                        SAQIB
+                        {name2.toUpperCase()}
                     </div>
                  </div>
               </div>
