@@ -50,6 +50,33 @@ export default function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
 
+  // Link Generator State
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const [genName1, setGenName1] = useState(name1);
+  const [genImg1, setGenImg1] = useState(img1);
+  const [genName2, setGenName2] = useState(name2);
+  const [genImg2, setGenImg2] = useState(img2);
+  const [generatedLink, setGeneratedLink] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
+
+  const generateLink = () => {
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.set('n1', genName1);
+    url.searchParams.set('i1', genImg1);
+    url.searchParams.set('n2', genName2);
+    url.searchParams.set('i2', genImg2);
+    setGeneratedLink(url.toString());
+    setIsCopied(false);
+  };
+
+  const copyToClipboard = () => {
+    if (generatedLink) {
+      navigator.clipboard.writeText(generatedLink);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
@@ -140,6 +167,87 @@ export default function App() {
         >
           <Download className="w-6 h-6" />
         </button>
+      )}
+
+      {/* Link Generator Modal */}
+      {isGeneratorOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md relative animate-in fade-in zoom-in duration-300">
+            <button 
+              onClick={() => setIsGeneratorOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl leading-none"
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-bold mb-4 font-sans text-gray-800">Generate Custom Link</h2>
+            
+            <div className="space-y-4 font-sans">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name 1</label>
+                <input 
+                  type="text" 
+                  value={genName1} 
+                  onChange={(e) => setGenName1(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:border-pink-500"
+                  placeholder="e.g. murru"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image 1 URL</label>
+                <input 
+                  type="text" 
+                  value={genImg1} 
+                  onChange={(e) => setGenImg1(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:border-pink-500"
+                  placeholder="https://..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name 2</label>
+                <input 
+                  type="text" 
+                  value={genName2} 
+                  onChange={(e) => setGenName2(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:border-pink-500"
+                  placeholder="e.g. sundari"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image 2 URL</label>
+                <input 
+                  type="text" 
+                  value={genImg2} 
+                  onChange={(e) => setGenImg2(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:border-pink-500"
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button 
+                onClick={generateLink}
+                className="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-4 rounded transition-colors"
+              >
+                Generate Link
+              </button>
+            </div>
+
+            {generatedLink && (
+              <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded relative">
+                <p className="text-xs text-gray-600 break-all pr-8 h-12 overflow-y-auto">{generatedLink}</p>
+                <button 
+                  onClick={copyToClipboard}
+                  className={`absolute top-2 right-2 px-2 py-1 text-xs rounded font-medium transition-colors ${
+                    isCopied ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {isCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-[#e8e2d9] p-6 sm:p-14 lg:p-20 relative overflow-hidden">
         
@@ -313,7 +421,10 @@ export default function App() {
             <div className="flex-1 h-[2px] bg-[#e11d48] relative">
                <div className="absolute -top-1 right-0 w-3 h-3 rounded-full bg-[#e11d48]"></div>
             </div>
-            <Heart className="mx-4 sm:mx-8 animate-pulse w-8 h-8 sm:w-12 sm:h-12 fill-[#e11d48] text-[#e11d48] filter drop-shadow-md" />
+            <Heart 
+              className="mx-4 sm:mx-8 animate-pulse w-8 h-8 sm:w-12 sm:h-12 fill-[#e11d48] text-[#e11d48] filter drop-shadow-md cursor-pointer pointer-events-auto" 
+              onDoubleClick={() => setIsGeneratorOpen(true)}
+            />
             <div className="flex-1 h-[2px] bg-[#e11d48] relative">
                <div className="absolute -top-1 left-0 w-3 h-3 rounded-full bg-[#e11d48]"></div>
             </div>
