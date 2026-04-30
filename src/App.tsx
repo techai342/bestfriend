@@ -6,12 +6,21 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Heart, Crown, Play, SkipBack, SkipForward, Volume2, Download } from 'lucide-react';
+import { supabase } from './supabase';
 
+export function generateShortCode(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
-const message = "Vira meri jaan Me tum ko aj kehna chahti hoo k tum meray liay itni zyada khass ho k tum soch b nhi sukhti Tumhari jesi dost Allah Naseeb walon ko deta hai ❤️ or dekho me kitni zyada lucky hoon k tum mujhe mili 😍 Tum boht hee zyada Achi ho 💓 or Hamesha mujse boht zyada pyar kerti ho ❤️ Or hamesha mujhe apni behn samjha hai tumne or hamesha mera sath deti ho 🤗 Me kabhi bhi tum ko bhool nhi sukhtikbhi b nhi.. I know tum mujse boht distance pe rehti ho per door reh k bhi mery subse zyada kareeb ho 😘 Mujhe esa mehsoos hee nhi hota k hum kabhi mile hee nhi aik dusaray se esa lgta hai jesy hamesha se hee sath hain Tum mery liay hamesha irreplaceable raho gi 💖 koi bhi tumhari jagh nhi le sukta 😍 Meri dua hai k hum hamesha ❤️ BEST FRIENDS ❤️ rahain or Kbhi b hamaray drmiyaan koi glt fehmi na aai Or hamara relation itna strong hai k koi isy tod nhi sukhta kisi me itni himat nhi k koi hamari dosti ko nazar lga sakay Me Allah ka boht shukar kerti hoo k mujhe tum jesi dost mili 💜 🥰 Tum ba sirf meri bestie ho bulke meri soulmate ho 🌏 meri lifeline ❣ meri sister 💕 meri life 💖 my everything ✨ You mean alot to me meri berry 🍓 I am so glad that I found you 💖 I feel so blessed 🤲";
-
-// Split string but preserve some meaning
-const words = message.split(' ');
+const messageGG = "Vira meri jaan Me tum ko aj kehna chahti hoo k tum meray liay itni zyada khass ho k tum soch b nhi sukhti Tumhari jesi dost Allah Naseeb walon ko deta hai ❤️ or dekho me kitni zyada lucky hoon k tum mujhe mili 😍 Tum boht hee zyada Achi ho 💓 or Hamesha mujse boht zyada pyar kerti ho ❤️ Or hamesha mujhe apni behn samjha hai tumne or hamesha mera sath deti ho 🤗 Me kabhi bhi tum ko bhool nhi sukhtikbhi b nhi.. I know tum mujse boht distance pe rehti ho per door reh k bhi mery subse zyada kareeb ho 😘 Mujhe esa mehsoos hee nhi hota k hum kabhi mile hee nhi aik dusaray se esa lgta hai jesy hamesha se hee sath hain Tum mery liay hamesha irreplaceable raho gi 💖 koi bhi tumhari jagh nhi le sukta 😍 Meri dua hai k hum hamesha ❤️ BEST FRIENDS ❤️ rahain or Kbhi b hamaray drmiyaan koi glt fehmi na aai Or hamara relation itna strong hai k koi isy tod nhi sukhta kisi me itni himat nhi k koi hamari dosti ko nazar lga sakay Me Allah ka boht shukar kerti hoo k mujhe tum jesi dost mili 💜 🥰 Tum ba sirf meri bestie ho bulke meri soulmate ho 🌏 meri lifeline ❣ meri sister 💕 meri life 💖 my everything ✨ You mean alot to me meri berry 🍓 I am so glad that I found you 💖 I feel so blessed 🤲";
+const messageBB = "Yaar meri jaan main tujhe aaj batana chahta hoon k tu mere liye kitna khass hai, shayad tu soch bhi nahi sakta. Tere jesa bhai dhoondne se bhi nahi milta ❤️. Sach bolu toh tu sirf mera dost nahi, mera apna bhai hai 😍! Humara bond itna strong hai k lagta hai hum khoon k rishte se bhi barh kar hain 🫂. Tune hamesha har mushkil mein mera sath diya hai, chahe koi bhi situation ho tu hamesha meray peeth pichy dhaal ban kar khada raha hai. Tere bina toh apun ki life ek dum adhoori aur boring hai yaar 😂. Kisi ki majal nahi jo hamari dosti aur bhaichare k beech aa sake 💪. Hum physically chahe jitna bhi door hon, par jab jarurat parti hai tu sabse pehle haazir hota hai. Allah hamari is dosti ko hamesha aese hi barkarar rakhe aur kabhi kisi ki buri nazar na lagne de. Tu mera jigar ka tukda hai meri jaan 💯, meri strength aur mera sab se bara support system. Love you brother, always be my ride or die! 🏍️ 👑";
+const messageBG = "Meri jaan, main tumhe aaj batana chahta hoon k tum mere liye kitni khass ho, shayad tum soch bhi nahi sakti. Tum jesi bestie dhoondne se bhi nahi milti ❤️. Sach bolu toh tum sirf meri dost nahi, meri sab kuch ho 😍! Humara bond itna strong hai k lagta hai hum hamesha se ek dusre k liye bane hain 🫂. Tumne hamesha har mushkil mein mera sath diya hai. Tumhare bina toh life ek dum adhoori aur boring hai yaar 😂. Kisi ki majal nahi jo hamari dosti k beech aa sake 💪. Hum physically chahe jitna bhi door hon, par jab jarurat parti hai tum sabse pehle sath hoti ho. Allah hamari is dosti ko hamesha aese hi barkarar rakhe aur kabhi kisi ki buri nazar na lagne de. Tum meri best friend ho meri jaan 💯, meri strength aur mera sab se bara support system. Love you bestie, always be my ride or die! ✨ 👑";
+const messageGB = "Mere pagal dost, mai tumhe aaj batana chahti hoon k tum mere liye kitne khass ho, shayad tum soch bhi nahi sakte. Tum jesa pagal dost dhoondne se bhi nahi milta ❤️. Sach bolu toh tum sirf mere dost nahi, bilkul family jaise ho 😍! Humara bond itna strong hai k lagta hai hum hamesha se ek dusre ko jante hain 🫂. Tumne hamesha har mushkil mein mera sath diya hai. Tumhare bina toh life ek dum adhoori aur boring hai yaar 😂. Kisi ki majal nahi jo hamari dosti k beech aa sake 💪. Hum physically chahe jitna bhi door hon, par jab jarurat parti hai tum sabse pehle sath hote ho. Allah hamari is dosti ko hamesha aese hi barkarar rakhe aur kabhi kisi ki buri nazar na lagne de. Tum mere jigar k tukde ho meri jaan 💯, meri strength aur mera sab se bara support system. Love you forever bestie, always be my ride or die! ✨ 👑";
 
 const ImageFrame = ({ src, alt, rotateClass, name }: { src: string; alt: string; rotateClass: string; name?: string }) => {
   return (
@@ -48,6 +57,7 @@ export default function App() {
   const img2 = searchParams.get('i2') || searchParams.get('img2') || "https://ik.imagekit.io/19imy4f1u/lite_1777432145117_9DRz3sAoev.png";
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isInstallable, setIsInstallable] = useState(false);
 
   // Link Generator State
@@ -56,17 +66,53 @@ export default function App() {
   const [genImg1, setGenImg1] = useState(img1);
   const [genName2, setGenName2] = useState(name2);
   const [genImg2, setGenImg2] = useState(img2);
+  const [genBondType, setGenBondType] = useState(searchParams.get('type') || 'gg');
   const [generatedLink, setGeneratedLink] = useState("");
   const [isCopied, setIsCopied] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateLink = () => {
-    const url = new URL(window.location.origin + window.location.pathname);
-    url.searchParams.set('n1', genName1);
-    url.searchParams.set('i1', genImg1);
-    url.searchParams.set('n2', genName2);
-    url.searchParams.set('i2', genImg2);
-    setGeneratedLink(url.toString());
-    setIsCopied(false);
+  // Determine current active message
+  const bondTypeParam = searchParams.get('type') || 'gg';
+  let activeMessage = messageGG;
+  if (bondTypeParam === 'bb') activeMessage = messageBB;
+  else if (bondTypeParam === 'bg') activeMessage = messageBG;
+  else if (bondTypeParam === 'gb') activeMessage = messageGB;
+
+  const words = activeMessage.split(' ');
+
+  const generateLink = async () => {
+    setIsGenerating(true);
+    try {
+      const url = new URL(window.location.origin + '/');
+      url.searchParams.set('n1', genName1);
+      url.searchParams.set('i1', genImg1);
+      url.searchParams.set('n2', genName2);
+      url.searchParams.set('i2', genImg2);
+      if (genBondType !== 'gg') {
+        url.searchParams.set('type', genBondType);
+      }
+      const longUrl = url.toString();
+
+      const domain = window.location.hostname;
+      const code = generateShortCode();
+
+      const { error } = await supabase
+        .from('urls')
+        .insert([{ domain, short_code: code, long_url: longUrl }]);
+
+      if (error) {
+        console.error("Error generating short link:", error);
+        setGeneratedLink(longUrl); // Fallback
+      } else {
+        const shortUrl = window.location.origin + '/' + code;
+        setGeneratedLink(shortUrl);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsGenerating(false);
+      setIsCopied(false);
+    }
   };
 
   const copyToClipboard = () => {
@@ -78,6 +124,34 @@ export default function App() {
   };
 
   useEffect(() => {
+    const checkShortLink = async () => {
+      const path = window.location.pathname.replace(/^\/+/, '');
+      if (path === 'edit') {
+        setIsGeneratorOpen(true);
+        setTimeout(() => setIsLoading(false), 1500);
+        return;
+      }
+      if (path && !path.includes('/') && path.length > 3) {
+        const domain = window.location.hostname;
+        const { data, error } = await supabase
+          .from('urls')
+          .select('long_url')
+          .eq('domain', domain)
+          .eq('short_code', path)
+          .single();
+
+        if (data?.long_url) {
+          window.location.href = data.long_url;
+          return;
+        } else {
+          setTimeout(() => setIsLoading(false), 1500);
+        }
+      } else {
+        setTimeout(() => setIsLoading(false), 1500);
+      }
+    };
+    checkShortLink();
+
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -156,6 +230,39 @@ export default function App() {
     setIsInstallable(false);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#fdfaf6] flex flex-col items-center justify-center font-sans">
+        <motion.div
+           initial={{ scale: 0.8, opacity: 0 }}
+           animate={{ scale: 1, opacity: 1 }}
+           transition={{ duration: 0.5, ease: "easeOut" }}
+           className="flex flex-col items-center"
+        >
+          <Heart className="w-16 h-16 sm:w-24 sm:h-24 fill-pink-500 text-pink-500 animate-pulse drop-shadow-lg mb-6" />
+          <motion.h1 
+             initial={{ y: 10, opacity: 0 }}
+             animate={{ y: 0, opacity: 1 }}
+             transition={{ delay: 0.3 }}
+             className="text-3xl sm:text-5xl font-serif italic text-pink-600 font-bold"
+          >
+            Best Friends...
+          </motion.h1>
+          <motion.div 
+            className="mt-6 flex gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            <span className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+            <span className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+            <span className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#fdfaf6] py-8 sm:py-16 px-4 sm:px-8 selection:bg-[#e8e2d9] font-sans text-[#2d2d2d]">
       {/* PWA Install Button */}
@@ -171,8 +278,8 @@ export default function App() {
 
       {/* Link Generator Modal */}
       {isGeneratorOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 font-sans">
-          <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-md relative flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 font-sans sm:p-6">
+          <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-md relative flex flex-col max-h-[85dvh] lg:max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300">
             {/* Background Decorations */}
             <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-pink-100 rounded-bl-full opacity-50 mix-blend-multiply pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-32 sm:h-32 bg-rose-100 rounded-tr-full opacity-50 mix-blend-multiply pointer-events-none"></div>
@@ -193,7 +300,7 @@ export default function App() {
             
             {/* Scrollable Body Container */}
             <div className="px-5 sm:px-8 py-4 overflow-y-auto scrollbar-hide flex-1 min-h-0 relative z-10">
-              <div className="space-y-4 pb-2">
+              <div className="space-y-4 pb-8 sm:pb-4">
               
               {/* Person 1 */}
               <div className="bg-gray-50 p-3 sm:p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group/card transition-colors">
@@ -230,7 +337,7 @@ export default function App() {
                              
                              const formData = new FormData();
                              formData.append('file', file);
-                             formData.append('fileName', `${genName1 || 'person1'}_${Date.now()}`);
+                             formData.append('fileName', file.name);
                              formData.append('publicKey', 'public_W8pXprjPHYrYwlWMf811dtUm2Og=');
 
                              try {
@@ -303,7 +410,7 @@ export default function App() {
                              
                              const formData = new FormData();
                              formData.append('file', file);
-                             formData.append('fileName', `${genName2 || 'person2'}_${Date.now()}`);
+                             formData.append('fileName', file.name);
                              formData.append('publicKey', 'public_W8pXprjPHYrYwlWMf811dtUm2Og=');
 
                              try {
@@ -341,6 +448,57 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Bond Type Selection */}
+              <div className="mt-6 mb-4">
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Relationship Type</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={`flex justify-center py-2.5 rounded-xl border-2 transition-all cursor-pointer ${genBondType === 'gg' ? 'border-pink-400 bg-pink-50' : 'border-gray-200 bg-white hover:border-pink-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="bondType" 
+                      value="gg"
+                      checked={genBondType === 'gg'}
+                      onChange={() => setGenBondType('gg')}
+                      className="hidden"
+                    />
+                    <span className={`text-[12px] font-bold tracking-tight ${genBondType === 'gg' ? 'text-pink-600' : 'text-gray-500'}`}>Girl 🎀 Girl</span>
+                  </label>
+                  <label className={`flex justify-center py-2.5 rounded-xl border-2 transition-all cursor-pointer ${genBondType === 'bb' ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="bondType" 
+                      value="bb"
+                      checked={genBondType === 'bb'}
+                      onChange={() => setGenBondType('bb')}
+                      className="hidden"
+                    />
+                    <span className={`text-[12px] font-bold tracking-tight ${genBondType === 'bb' ? 'text-indigo-600' : 'text-gray-500'}`}>Boy 💫 Boy</span>
+                  </label>
+                  <label className={`flex justify-center py-2.5 rounded-xl border-2 transition-all cursor-pointer ${genBondType === 'bg' ? 'border-violet-400 bg-violet-50' : 'border-gray-200 bg-white hover:border-violet-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="bondType" 
+                      value="bg"
+                      checked={genBondType === 'bg'}
+                      onChange={() => setGenBondType('bg')}
+                      className="hidden"
+                    />
+                    <span className={`text-[12px] font-bold tracking-tight ${genBondType === 'bg' ? 'text-violet-600' : 'text-gray-500'}`}>Boy ✨ Girl</span>
+                  </label>
+                  <label className={`flex justify-center py-2.5 rounded-xl border-2 transition-all cursor-pointer ${genBondType === 'gb' ? 'border-fuchsia-400 bg-fuchsia-50' : 'border-gray-200 bg-white hover:border-fuchsia-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="bondType" 
+                      value="gb"
+                      checked={genBondType === 'gb'}
+                      onChange={() => setGenBondType('gb')}
+                      className="hidden"
+                    />
+                    <span className={`text-[12px] font-bold tracking-tight ${genBondType === 'gb' ? 'text-fuchsia-600' : 'text-gray-500'}`}>Girl 🌟 Boy</span>
+                  </label>
+                </div>
+              </div>
+
               {/* Generated Link Box - Inside scrollable area */}
               {generatedLink && (
                 <div className="mt-2 p-3 sm:p-4 bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 rounded-2xl relative animate-in slide-in-from-bottom-4 zoom-in-95 duration-500 shadow-inner">
@@ -373,10 +531,19 @@ export default function App() {
             <div className="p-4 sm:p-6 pb-6 sm:pb-8 relative z-10 shrink-0 bg-white/95 backdrop-blur-md border-t border-gray-50 shadow-[0_-10px_20px_rgba(255,255,255,0.8)]">
               <button 
                 onClick={generateLink}
-                className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all shadow-[0_10px_20px_rgba(244,63,94,0.3)] hover:shadow-[0_10px_25px_rgba(244,63,94,0.4)] transform hover:-translate-y-0.5 text-sm sm:text-base flex items-center justify-center gap-2 group"
+                disabled={isGenerating}
+                className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all shadow-[0_10px_20px_rgba(244,63,94,0.3)] hover:shadow-[0_10px_25px_rgba(244,63,94,0.4)] transform hover:-translate-y-0.5 text-sm sm:text-base flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
               >
-                <span>Spark Magic</span>
-                <span className="text-xl group-hover:animate-bounce">✨</span>
+                {isGenerating ? (
+                   <>
+                     <span className="animate-pulse">Creating ✨...</span>
+                   </>
+                ) : (
+                   <>
+                     <span>Spark Magic</span>
+                     <span className="text-xl group-hover:animate-bounce">✨</span>
+                   </>
+                )}
               </button>
             </div>
 
@@ -1113,6 +1280,23 @@ export default function App() {
                   {[...Array(8)].map((_, i) => <div key={i} className="w-1.5 h-1.5 bg-[#1a1a1a] rounded-full"></div>)}
                </div>
              </motion.div>
+          </motion.div>
+
+          {/* Create Your Own Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="w-full flex justify-center pb-12 z-20 relative"
+          >
+            <button
+               onClick={() => setIsGeneratorOpen(true)}
+               className="bg-white/90 backdrop-blur-md border-2 border-pink-400 text-pink-600 font-bold py-3.5 px-8 rounded-full shadow-[0_10px_25px_rgba(244,63,94,0.3)] hover:scale-105 hover:bg-pink-50 hover:shadow-[0_15px_35px_rgba(244,63,94,0.4)] transition-all duration-300 flex items-center gap-3 group"
+            >
+               <span>Create Your Own Link</span>
+               <span className="text-xl group-hover:rotate-12 transition-transform">✨</span>
+            </button>
           </motion.div>
 
         </motion.div>
