@@ -1,1763 +1,1335 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { UploadCloud, CheckCircle2, AlertCircle, Copy, ArrowRight, Image as ImageIcon, Loader2, Download, Trash2, Settings2, Wand2, QrCode, RefreshCw, X, Archive, Link as LinkIcon } from 'lucide-react';
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
-import { UploadedFile } from './types';
-import { ImageCard } from './components/ImageCard';
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-const IMAGEKIT_PUBLIC = "public_W8pXprjPHYrYwlWMf811dtUm2Og=";
-const IMAGEKIT_PRIVATE = "private_Wu/w/ZEmydjv/FbRgVKOffRxtNY=";
-const IMGBB_API_KEY = 'a26bed1b2fd07ba03bff75343d0834fe';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { Heart, Crown, Play, SkipBack, SkipForward, Volume2, Download } from 'lucide-react';
+import { supabase } from './supabase';
 
-function formatBytes(bytes: number, decimals = 2) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+export function generateShortCode(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
-const fetchImageWithProxies = async (url: string): Promise<File | null> => {
-  try {
-    let response: Response | null = null;
-    const proxies = [
-      '', // Direct
-      'https://corsproxy.io/?',
-      'https://api.allorigins.win/raw?url=',
-      'https://api.codetabs.com/v1/proxy?quest='
-    ];
+const messageGG = "Vira meri jaan Me tum ko aj kehna chahti hoo k tum meray liay itni zyada khass ho k tum soch b nhi sukhti Tumhari jesi dost Allah Naseeb walon ko deta hai ❤️ or dekho me kitni zyada lucky hoon k tum mujhe mili 😍 Tum boht hee zyada Achi ho 💓 or Hamesha mujse boht zyada pyar kerti ho ❤️ Or hamesha mujhe apni behn samjha hai tumne or hamesha mera sath deti ho 🤗 Me kabhi bhi tum ko bhool nhi sukhtikbhi b nhi.. I know tum mujse boht distance pe rehti ho per door reh k bhi mery subse zyada kareeb ho 😘 Mujhe esa mehsoos hee nhi hota k hum kabhi mile hee nhi aik dusaray se esa lgta hai jesy hamesha se hee sath hain Tum mery liay hamesha irreplaceable raho gi 💖 koi bhi tumhari jagh nhi le sukta 😍 Meri dua hai k hum hamesha ❤️ BEST FRIENDS ❤️ rahain or Kbhi b hamaray drmiyaan koi glt fehmi na aai Or hamara relation itna strong hai k koi isy tod nhi sukhta kisi me itni himat nhi k koi hamari dosti ko nazar lga sakay Me Allah ka boht shukar kerti hoo k mujhe tum jesi dost mili 💜 🥰 Tum ba sirf meri bestie ho bulke meri soulmate ho 🌏 meri lifeline ❣ meri sister 💕 meri life 💖 my everything ✨ You mean alot to me meri berry 🍓 I am so glad that I found you 💖 I feel so blessed 🤲";
+const messageBB = "Yaar meri jaan main tujhe aaj batana chahta hoon k tu mere liye kitna khass hai, shayad tu soch bhi nahi sakta. Tere jesa bhai dhoondne se bhi nahi milta ❤️. Sach bolu toh tu sirf mera dost nahi, mera apna bhai hai 😍! Humara bond itna strong hai k lagta hai hum khoon k rishte se bhi barh kar hain 🫂. Tune hamesha har mushkil mein mera sath diya hai, chahe koi bhi situation ho tu hamesha meray peeth pichy dhaal ban kar khada raha hai. Tere bina toh apun ki life ek dum adhoori aur boring hai yaar 😂. Kisi ki majal nahi jo hamari dosti aur bhaichare k beech aa sake 💪. Hum physically chahe jitna bhi door hon, par jab jarurat parti hai tu sabse pehle haazir hota hai. Allah hamari is dosti ko hamesha aese hi barkarar rakhe aur kabhi kisi ki buri nazar na lagne de. Tu mera jigar ka tukda hai meri jaan 💯, meri strength aur mera sab se bara support system. Love you brother, always be my ride or die! 🏍️ 👑";
+const messageBG = "Meri jaan, main tumhe aaj batana chahta hoon k tum mere liye kitni khass ho, shayad tum soch bhi nahi sakti. Tum jesi bestie dhoondne se bhi nahi milti ❤️. Sach bolu toh tum sirf meri dost nahi, meri sab kuch ho 😍! Humara bond itna strong hai k lagta hai hum hamesha se ek dusre k liye bane hain 🫂. Tumne hamesha har mushkil mein mera sath diya hai. Tumhare bina toh life ek dum adhoori aur boring hai yaar 😂. Kisi ki majal nahi jo hamari dosti k beech aa sake 💪. Hum physically chahe jitna bhi door hon, par jab jarurat parti hai tum sabse pehle sath hoti ho. Allah hamari is dosti ko hamesha aese hi barkarar rakhe aur kabhi kisi ki buri nazar na lagne de. Tum meri best friend ho meri jaan 💯, meri strength aur mera sab se bara support system. Love you bestie, always be my ride or die! ✨ 👑";
+const messageGB = "Mere pagal dost, mai tumhe aaj batana chahti hoon k tum mere liye kitne khass ho, shayad tum soch bhi nahi sakte. Tum jesa pagal dost dhoondne se bhi nahi milta ❤️. Sach bolu toh tum sirf mere dost nahi, bilkul family jaise ho 😍! Humara bond itna strong hai k lagta hai hum hamesha se ek dusre ko jante hain 🫂. Tumne hamesha har mushkil mein mera sath diya hai. Tumhare bina toh life ek dum adhoori aur boring hai yaar 😂. Kisi ki majal nahi jo hamari dosti k beech aa sake 💪. Hum physically chahe jitna bhi door hon, par jab jarurat parti hai tum sabse pehle sath hote ho. Allah hamari is dosti ko hamesha aese hi barkarar rakhe aur kabhi kisi ki buri nazar na lagne de. Tum mere jigar k tukde ho meri jaan 💯, meri strength aur mera sab se bara support system. Love you forever bestie, always be my ride or die! ✨ 👑";
 
-    for (const proxy of proxies) {
-      try {
-        const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
-        response = await fetch(fetchUrl);
-        if (response.ok) {
-          break; // Success!
-        }
-      } catch (e) {
-        // Ignore and try the next proxy
-      }
-    }
-
-    if (response && response.ok) {
-      const blob = await response.blob();
-      if (blob.type.startsWith('image/')) {
-        const filename = url.split('/').pop()?.split('?')[0] || `pasted-image-${Date.now()}.jpg`;
-        return new File([blob], filename, { type: blob.type });
-      }
-    } else {
-      console.error('Failed to fetch pasted image URL even with proxies', url);
-    }
-  } catch (err) {
-    console.error('Failed to fetch pasted image URL', url, err);
-  }
-  return null;
-};
-
-const compressImage = (file: File, targetSizeKB: number, format: string, filter: string): Promise<Blob> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
-      const MAX_WIDTH = 1600; 
-      if (width > MAX_WIDTH) {
-        height *= MAX_WIDTH / width;
-        width = MAX_WIDTH;
-      }
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return reject(new Error("Canvas context not found"));
-      
-      const isTransparent = file.type === 'image/png' || file.type === 'image/webp';
-      const outputType = format === 'auto' 
-        ? (isTransparent ? 'image/webp' : 'image/jpeg')
-        : `image/${format}`;
-
-      ctx.clearRect(0, 0, width, height);
-      if (outputType === 'image/jpeg') {
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, width, height);
-      }
-      if (filter !== 'none') {
-        ctx.filter = filter;
-      }
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      let quality = 0.9;
-
-      const tryCompress = () => {
-        canvas.toBlob((blob) => {
-          if (!blob) return reject(new Error("Compression error"));
-          if (blob.size <= (targetSizeKB * 1024) || quality <= 0.1) {
-            resolve(blob);
-          } else {
-            quality = Math.max(0.1, quality - 0.1);
-            tryCompress(); 
-          }
-        }, outputType, quality);
-      };
-      tryCompress();
-    };
-    img.onerror = () => reject(new Error("Failed to load image for compression"));
-  });
-};
-
-const uploadToImageKit = async (blob: Blob | File, type: string, keys: { public: string, private: string }) => {
-  try {
-    const extension = type.split('/')[1] || 'jpg';
-    const formData = new FormData();
-    formData.append('file', blob);
-    formData.append('fileName', `lite_${Date.now()}.${extension}`);
-    formData.append('publicKey', keys.public);
-    formData.append('useUniqueFileName', 'true');
-
-    const res = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
-      method: 'POST',
-      headers: { 
-        'Authorization': 'Basic ' + btoa(keys.private + ':') 
-      },
-      body: formData
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch (e) {
-        errorData = { message: errorText };
-      }
-      throw new Error(errorData.message || `ImageKit error: ${res.status}`);
-    }
-
-    const data = await res.json();
-    if (!data.url) throw new Error("ImageKit response missing URL");
-    return data.url;
-  } catch (error: any) {
-    console.error("ImageKit Upload Error:", error);
-    throw error;
-  }
-};
-
-const uploadToImgBB = async (blob: Blob | File, type: string, apiKey: string) => {
-  try {
-    const extension = type.split('/')[1] || 'jpg';
-    const formData = new FormData();
-    formData.append('image', blob, `image.${extension}`);
-    
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`ImgBB error: ${res.status} ${errorText}`);
-    }
-
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error?.message || "ImgBB Upload Failed");
-    }
-    return data.data.url;
-  } catch (error: any) {
-    console.error("ImgBB Upload Error:", error);
-    throw error;
-  }
+const ImageFrame = ({ src, alt, rotateClass, name }: { src: string; alt: string; rotateClass: string; name?: string }) => {
+  return (
+    <div
+      className={`relative group cursor-pointer w-full rgb-frame transition-all duration-500 hover:scale-[1.03] ${rotateClass} hover:rotate-0 hover:z-20 bg-white p-2 sm:p-3 pb-9 sm:pb-12`}
+    >
+      <div className="absolute inset-0 bg-[#c28e7e]/0 group-hover:bg-[#c28e7e]/5 transition-colors z-10 duration-500 pointer-events-none"></div>
+      <div className="w-full relative bg-[#f2ede7]">
+        <img
+          src={src}
+          className="w-full h-auto block object-cover transition-transform duration-[2000ms] group-hover:scale-105"
+          alt={alt}
+          referrerPolicy="no-referrer"
+        />
+        {/* Glow effect on hover */}
+        <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.1)] pointer-events-none"></div>
+      </div>
+      <div className="absolute bottom-1 sm:bottom-2 left-0 w-full text-center flex flex-col items-center justify-center">
+        {name && <span className="font-cursive text-lg sm:text-xl text-[#4a4540] font-bold leading-none">{name}</span>}
+        <Heart
+          className="w-3 h-3 sm:w-4 sm:h-4 text-[#c28e7e] opacity-0 group-hover:opacity-100 group-hover:animate-bounce transition-all duration-300 drop-shadow-sm mt-0.5 sm:mt-1"
+          fill="currentColor"
+        />
+      </div>
+    </div>
+  );
 };
 
 export default function App() {
-  const [server, setServer] = useState<'imagekit' | 'imgbb'>('imgbb');
-  const [compressEnabled, setCompressEnabled] = useState(false);
-  const [multipleEnabled, setMultipleEnabled] = useState(false);
-  const [targetSize, setTargetSize] = useState(150);
-  const [outputFormat, setOutputFormat] = useState<'auto' | 'webp' | 'jpeg' | 'png'>('auto');
-  const [imageFilter, setImageFilter] = useState<string>('none');
-  const [autoCopy, setAutoCopy] = useState(false);
-  const [showKeys, setShowKeys] = useState(false);
-  
-  const [showBGRemover, setShowBGRemover] = useState(false);
-  const [bgInputUrl, setBgInputUrl] = useState('');
-  const [bgBlob, setBgBlob] = useState<Blob | null>(null);
-  const [bgResultImg, setBgResultImg] = useState<string | null>(null);
-  const [isRemovingBgInternal, setIsRemovingBgInternal] = useState(false);
+  const [content, setContent] = useState(() => {
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+    return {
+      name1: params.get('n1') || params.get('name1') || "murru",
+      img1: params.get('i1') || params.get('img1') || "https://ik.imagekit.io/19imy4f1u/lite_1777432062255_b4O1TkoKUT.png",
+      name2: params.get('n2') || params.get('name2') || "sundari",
+      img2: params.get('i2') || params.get('img2') || "https://ik.imagekit.io/19imy4f1u/lite_1777432145117_9DRz3sAoev.png",
+      type: params.get('type') || 'gg'
+    };
+  });
 
-  const handleRemoveBGUrl = async (url: string, fileSource?: Blob | null) => {
-    if (!url && !fileSource) return;
-    setIsRemovingBgInternal(true);
-    setBgResultImg(null);
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+  const { name1, img1, name2, img2, type } = content;
 
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  // Link Generator State
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const [genName1, setGenName1] = useState(name1);
+  const [genImg1, setGenImg1] = useState(img1);
+  const [genName2, setGenName2] = useState(name2);
+  const [genImg2, setGenImg2] = useState(img2);
+  const [genBondType, setGenBondType] = useState(type);
+  const [generatedLink, setGeneratedLink] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Determine current active message
+  const bondTypeParam = type;
+  let activeMessage = messageGG;
+  if (bondTypeParam === 'bb') activeMessage = messageBB;
+  else if (bondTypeParam === 'bg') activeMessage = messageBG;
+  else if (bondTypeParam === 'gb') activeMessage = messageGB;
+
+  const words = activeMessage.split(' ');
+
+  const generateLink = async () => {
+    setIsGenerating(true);
     try {
-      const formData = new FormData();
-      const source = fileSource || bgBlob;
-
-      if (source) {
-        formData.append("image_file", source, "image.png");
-      } else if (url) {
-        formData.append("image_url", url);
+      const url = new URL(window.location.origin + '/');
+      url.searchParams.set('n1', genName1);
+      url.searchParams.set('i1', genImg1);
+      url.searchParams.set('n2', genName2);
+      url.searchParams.set('i2', genImg2);
+      if (genBondType !== 'gg') {
+        url.searchParams.set('type', genBondType);
       }
-      formData.append("size", "auto");
+      const longUrl = url.toString();
 
-      const response = await fetch("https://api.remove.bg/v1.0/removebg", {
-        method: "POST",
-        headers: {
-          "X-Api-Key": "kWeEsu1kfsLT4dDHFwQzKPbf",
-        },
-        body: formData,
-        signal: controller.signal
-      });
+      const domain = window.location.hostname;
+      const code = generateShortCode();
 
-      clearTimeout(timeoutId);
+      const { error } = await supabase
+        .from('urls')
+        .insert([{ domain, short_code: code, long_url: longUrl }]);
 
-      if (!response.ok) {
-        let errorMsg = `API Error: ${response.status}`;
-        try {
-          const errorData = await response.json();
-          errorMsg = errorData.errors?.[0]?.title || errorMsg;
-        } catch (e) {
-          // If not JSON, show status
-        }
-        
-        if (response.status === 402) {
-          throw new Error("API credits khatam ho gaye hain. Naya account use karein.");
-        } else if (response.status === 403) {
-          throw new Error("API key invalid hai.");
-        }
-        throw new Error(errorMsg);
-      }
-
-      const resultBlob = await response.blob();
-      if (resultBlob.size < 100) throw new Error("Invalid image result received");
-      
-      const resultUrl = URL.createObjectURL(resultBlob);
-      setBgResultImg(resultUrl);
-    } catch (error: any) {
-      clearTimeout(timeoutId);
-      console.error("Remove.bg error:", error);
-      if (error.name === 'AbortError') {
-        alert("❌ Request timed out (60s). Internet slow ho sakta hai ya API busy hai.");
+      if (error) {
+        console.error("Error generating short link:", error);
+        setGeneratedLink(longUrl); // Fallback
       } else {
-        alert(`❌ ${error.message}`);
+        const shortUrl = window.location.origin + '/' + code;
+        setGeneratedLink(shortUrl);
       }
+    } catch (err) {
+      console.error(err);
     } finally {
-      setIsRemovingBgInternal(false);
+      setIsGenerating(false);
+      setIsCopied(false);
     }
   };
 
-  const [ikPublic, setIkPublic] = useState(localStorage.getItem('ik_public') || IMAGEKIT_PUBLIC);
-  const [ikPrivate, setIkPrivate] = useState(localStorage.getItem('ik_private') || IMAGEKIT_PRIVATE);
-  const [ibbKey, setIbbKey] = useState(localStorage.getItem('ibb_key') || IMGBB_API_KEY);
-
-  useEffect(() => {
-    localStorage.setItem('ik_public', ikPublic);
-    localStorage.setItem('ik_private', ikPrivate);
-    localStorage.setItem('ibb_key', ibbKey);
-  }, [ikPublic, ikPrivate, ibbKey]);
-  const [uploads, setUploads] = useState<UploadedFile[]>(() => {
-    const saved = sessionStorage.getItem('imagelite_history');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // We can't persist Blob URLs, so we'll use the final URL as preview if available
-        return parsed.map((u: any) => ({
-          ...u,
-          previewUrl: u.url || u.previewUrl,
-          status: u.status === 'success' ? 'success' : 'error' // Reset pending/uploading to error if they were interrupted
-        }));
-      } catch (e) {
-        return [];
-      }
+  const copyToClipboard = () => {
+    if (generatedLink) {
+      navigator.clipboard.writeText(generatedLink);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
     }
-    return [];
-  });
+  };
 
   useEffect(() => {
-    const toSave = uploads.filter(u => u.status === 'success').map(u => ({
-      id: u.id,
-      originalFile: { name: u.originalFile.name, type: u.originalFile.type },
-      originalSize: u.originalSize,
-      compressedSize: u.compressedSize,
-      status: u.status,
-      url: u.url,
-      originalUrl: u.originalUrl
-    }));
-    sessionStorage.setItem('imagelite_history', JSON.stringify(toSave));
-  }, [uploads]);
-
-  const [isDragging, setIsDragging] = useState(false);
-  const [copiedAll, setCopiedAll] = useState(false);
-  const [activeQR, setActiveQR] = useState<string | null>(null);
-  const [replacingId, setReplacingId] = useState<string | null>(null);
-  
-  // Bulk links state
-  const [showPasteArea, setShowPasteArea] = useState(false);
-  const [pasteText, setPasteText] = useState('');
-  const [isFetchingLinks, setIsFetchingLinks] = useState(false);
-  const [fetchProgress, setFetchProgress] = useState({ current: 0, total: 0 });
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const replaceInputRef = useRef<HTMLInputElement>(null);
-  const settingsRef = useRef({ server, compressEnabled, multipleEnabled, targetSize, outputFormat, imageFilter, autoCopy });
-
-  useEffect(() => {
-    settingsRef.current = { server, compressEnabled, multipleEnabled, targetSize, outputFormat, imageFilter, autoCopy };
-  }, [server, compressEnabled, multipleEnabled, targetSize, outputFormat, imageFilter, autoCopy]);
-
-  const updateUploadStatus = useCallback((id: string, updates: Partial<UploadedFile>) => {
-    setUploads(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
-  }, []);
-
-  const processSingleFile = useCallback(async (id: string, file: File, currentSettings: any, originalUrl?: string, forceUpload?: boolean) => {
-    try {
-      let fileToUpload: Blob | File = file;
-      let outputType = file.type;
-
-      // Skip compression if it's from a URL (originalUrl exists) or if compression is disabled
-      if (currentSettings.compressEnabled && !originalUrl) {
-        updateUploadStatus(id, { status: 'compressing' });
-        const isTransparent = outputType === 'image/png' || outputType === 'image/webp';
-        outputType = currentSettings.outputFormat === 'auto' 
-          ? (isTransparent ? 'image/webp' : 'image/jpeg')
-          : `image/${currentSettings.outputFormat}`;
-        
-        fileToUpload = await compressImage(fileToUpload as File, currentSettings.targetSize, currentSettings.outputFormat, currentSettings.imageFilter);
-        updateUploadStatus(id, { compressedBlob: fileToUpload, compressedSize: fileToUpload.size });
-      }
-
-      // If we have an originalUrl, we just use it directly and don't upload, UNLESS forceUpload is true
-      if (originalUrl && !forceUpload) {
-        updateUploadStatus(id, { 
-          status: 'success', 
-          url: originalUrl 
-        });
+    const checkShortLink = async () => {
+      const path = window.location.pathname.replace(/^\/+/, '');
+      if (path === 'edit') {
+        setIsGeneratorOpen(true);
+        setTimeout(() => setIsLoading(false), 1500);
         return;
       }
+      if (path && !path.includes('/') && path.length > 3) {
+        const domain = window.location.hostname;
+        const { data, error } = await supabase
+          .from('urls')
+          .select('long_url')
+          .eq('domain', domain)
+          .eq('short_code', path)
+          .single();
 
-      updateUploadStatus(id, { status: 'uploading' });
-      
-      let url;
-      let lastError = "";
-      try {
-        const ikKeys = { public: ikPublic, private: ikPrivate };
-        if (currentSettings.server === 'imagekit') {
+        if (data?.long_url) {
           try {
-            url = await uploadToImageKit(fileToUpload, outputType, ikKeys);
-          } catch (e: any) {
-            lastError = `ImageKit: ${e.message}`;
-            console.warn("ImageKit failed, falling back to ImgBB", e);
-            url = await uploadToImgBB(fileToUpload, outputType, ibbKey);
-          }
-        } else {
-          try {
-            url = await uploadToImgBB(fileToUpload, outputType, ibbKey);
-          } catch (e: any) {
-            lastError = `ImgBB: ${e.message}`;
-            console.warn("ImgBB failed, falling back to ImageKit", e);
-            url = await uploadToImageKit(fileToUpload, outputType, ikKeys);
-          }
-        }
-      } catch (finalError: any) {
-        const errorMessage = lastError 
-          ? `${lastError} | Fallback: ${finalError.message}`
-          : finalError.message;
-        throw new Error(`Upload failed: ${errorMessage}`);
-      }
-
-      updateUploadStatus(id, { status: 'success', url });
-      if (settingsRef.current.autoCopy && url) {
-        navigator.clipboard.writeText(url);
-      }
-    } catch (error: any) {
-      updateUploadStatus(id, { status: 'error', error: error.message || 'Upload failed' });
-    }
-  }, [updateUploadStatus]);
-
-  const processFiles = useCallback((files: File[], originalUrls?: string[]) => {
-    const currentSettings = settingsRef.current;
-    if (files.length === 0) return;
-
-    const filesToProcess = currentSettings.multipleEnabled ? files : [files[0]];
-    const urlsToProcess = originalUrls ? (currentSettings.multipleEnabled ? originalUrls : [originalUrls[0]]) : [];
-    
-    // Filter out files that are already in the uploads list by originalUrl
-    const existingUrls = new Set(uploads.map(u => u.originalUrl).filter(Boolean));
-    
-    const newUploads: UploadedFile[] = [];
-    
-    filesToProcess.forEach((file, index) => {
-      const url = urlsToProcess[index];
-      if (url && existingUrls.has(url)) return;
-      
-      newUploads.push({
-        id: Math.random().toString(36).substring(7),
-        originalFile: file,
-        originalSize: file.size,
-        status: 'pending',
-        previewUrl: URL.createObjectURL(file),
-        originalUrl: url
-      });
-    });
-
-    if (newUploads.length === 0) return;
-
-    if (!currentSettings.multipleEnabled) {
-      setUploads(newUploads);
-    } else {
-      setUploads(prev => [...prev, ...newUploads]);
-    }
-
-    newUploads.forEach(upload => {
-      processSingleFile(upload.id, upload.originalFile, currentSettings, upload.originalUrl);
-    });
-  }, [processSingleFile]);
-
-  const handleLoadLinks = async () => {
-    if (!pasteText.trim()) return;
-
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const urls = pasteText.match(urlRegex);
-    
-    if (!urls || urls.length === 0) return;
-    
-    // Normalize and filter URLs
-    const normalizeUrl = (url: string) => {
-      try {
-        // Special handling for Pinterest to get original quality and avoid duplicates
-        if (url.includes('i.pinimg.com')) {
-          return url.replace(/\/(?:236x|474x|564x|736x)\//, '/originals/');
-        }
-        // Remove tracking params
-        const u = new URL(url);
-        u.search = '';
-        return u.toString();
-      } catch (e) {
-        return url;
-      }
-    };
-
-    const uniqueUrlsMap = new Map<string, string>();
-    urls.forEach(url => {
-      const normalized = normalizeUrl(url);
-      const filename = normalized.split('/').pop()?.split('?')[0] || normalized;
-      
-      // If we already have this filename, prefer the normalized/original version
-      if (!uniqueUrlsMap.has(filename) || normalized.includes('/originals/')) {
-        uniqueUrlsMap.set(filename, url);
-      }
-    });
-    
-    const urlsToFetch = Array.from(uniqueUrlsMap.values());
-
-    setIsFetchingLinks(true);
-    setFetchProgress({ current: 0, total: urlsToFetch.length });
-    
-    // Ensure multiple mode is on if we are loading multiple links
-    if (urlsToFetch.length > 1 && !multipleEnabled) {
-      setMultipleEnabled(true);
-    }
-
-    const batchSize = 5;
-    for (let i = 0; i < urlsToFetch.length; i += batchSize) {
-      const batch = urlsToFetch.slice(i, i + batchSize);
-      
-      await Promise.all(batch.map(async (url) => {
-        const file = await fetchImageWithProxies(url);
-        if (file) {
-          processFiles([file], [url]);
-        }
-        setFetchProgress(prev => ({ ...prev, current: prev.current + 1 }));
-      }));
-    }
-    
-    setIsFetchingLinks(false);
-    setPasteText(''); // Clear after loading
-    setShowPasteArea(false); // Hide area after loading
-  };
-
-  useEffect(() => {
-    const handlePaste = async (e: ClipboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-      
-      if (!e.clipboardData) return;
-      
-      // Check for files directly
-      if (e.clipboardData.files && e.clipboardData.files.length > 0) {
-        const files = Array.from(e.clipboardData.files).filter(f => f.type.startsWith('image/'));
-        if (files.length > 0) {
-          e.preventDefault();
-          processFiles(files);
-          return;
-        }
-      }
-
-      // Check items (for images copied from browser)
-      const items = Array.from(e.clipboardData.items);
-      const filesFromItems = items
-        .filter(item => item.type.startsWith('image/'))
-        .map(item => item.getAsFile())
-        .filter(Boolean) as File[];
-      
-      if (filesFromItems.length > 0) {
-        e.preventDefault();
-        processFiles(filesFromItems);
-        return;
-      }
-
-      const text = e.clipboardData.getData('text');
-      if (text) {
-        if (text.startsWith('data:image/')) {
-          e.preventDefault();
-          try {
-            const arr = text.split(',');
-            const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
-            const bstr = atob(arr[1]);
-            let n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            while (n--) {
-              u8arr[n] = bstr.charCodeAt(n);
-            }
-            const file = new File([u8arr], 'pasted-image.png', { type: mime });
-            processFiles([file]);
-          } catch (err) {
-            console.error('Failed to parse base64 image', err);
-          }
-        } else {
-          // Extract all URLs from the pasted text
-          const urlRegex = /(https?:\/\/[^\s]+)/g;
-          const urls = text.match(urlRegex);
-          
-          if (urls && urls.length > 0) {
-            e.preventDefault();
-            
-    const normalizeUrl = (url: string) => {
-      try {
-        if (url.includes('i.pinimg.com')) {
-          return url.replace(/\/(?:236x|474x|564x|736x)\//, '/originals/');
-        }
-        const u = new URL(url);
-        u.search = '';
-        return u.toString();
-      } catch (e) {
-        return url;
-      }
-    };
-
-    const uniqueUrlsMap = new Map<string, string>();
-    urls.forEach(url => {
-      const normalized = normalizeUrl(url);
-      const filename = normalized.split('/').pop()?.split('?')[0] || normalized;
-      if (!uniqueUrlsMap.has(filename) || normalized.includes('/originals/')) {
-        uniqueUrlsMap.set(filename, url);
-      }
-    });
-    
-    const urlsToFetch = Array.from(uniqueUrlsMap.values());
-
-            const fetchedFiles: File[] = [];
-            const fetchedUrls: string[] = [];
-            
-            // Process in batches to speed up fetching
-            const batchSize = 5;
-            for (let i = 0; i < urlsToFetch.length; i += batchSize) {
-              const batch = urlsToFetch.slice(i, i + batchSize);
-              
-              const results = await Promise.all(batch.map(async (url) => {
-                const file = await fetchImageWithProxies(url);
-                return { file, url };
-              }));
-              
-              for (const res of results) {
-                if (res.file) {
-                  fetchedFiles.push(res.file);
-                  fetchedUrls.push(res.url);
-                }
-              }
-            }
-            
-            if (fetchedFiles.length > 0) {
-              processFiles(fetchedFiles, fetchedUrls);
-            }
-          }
-        }
-      }
-    };
-    window.addEventListener('paste', handlePaste);
-    return () => window.removeEventListener('paste', handlePaste);
-  }, [processFiles]);
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const files = Array.from(e.dataTransfer.files).filter((f: File) => f.type.startsWith('image/'));
-      processFiles(files);
-    }
-  };
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const files = Array.from(e.target.files).filter((f: File) => f.type.startsWith('image/'));
-      processFiles(files);
-    }
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const copyAllLinks = () => {
-    const successfulUploads = uploads.filter(u => u.status === 'success' && u.url);
-    if (successfulUploads.length === 0) return;
-
-    const textToCopy = successfulUploads.map((u, index) => `Image ${index + 1}: ${u.url}`).join('\n');
-    navigator.clipboard.writeText(textToCopy);
-    setCopiedAll(true);
-    setTimeout(() => setCopiedAll(false), 2000);
-  };
-
-  const handleDownload = (upload: UploadedFile) => {
-    const isHistoryItem = !(upload.originalFile instanceof File);
-    
-    if (isHistoryItem && upload.url) {
-      window.open(upload.url, '_blank');
-      return;
-    }
-
-    const blob = upload.compressedBlob || upload.originalFile;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    
-    let ext = upload.originalFile.name.split('.').pop() || 'jpg';
-    if (compressEnabled) {
-      if (outputFormat === 'webp') ext = 'webp';
-      else if (outputFormat === 'jpeg') ext = 'jpg';
-      else if (outputFormat === 'png') ext = 'png';
-      else if (outputFormat === 'auto') {
-        const isTransparent = upload.originalFile.type === 'image/png' || upload.originalFile.type === 'image/webp';
-        ext = isTransparent ? 'webp' : 'jpg';
-      }
-    }
-    
-    a.download = `optimized_${upload.originalFile.name.split('.')[0]}.${ext}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const [isZipping, setIsZipping] = useState(false);
-
-  const handleDownloadExtension = async () => {
-    const zip = new JSZip();
-    
-    const manifest = {
-      "manifest_version": 3,
-      "name": "Image Lite Pro Extractor",
-      "version": "1.2",
-      "description": "Extract image links from any webpage and fetch them to Image Lite Pro.",
-      "permissions": ["activeTab", "scripting", "contextMenus", "clipboardWrite"],
-      "action": {
-        "default_popup": "popup.html",
-        "default_title": "Extract Images"
-      },
-      "background": {
-        "service_worker": "background.js"
-      }
-    };
-    
-    const appUrl = window.location.origin + window.location.pathname;
-    
-    const backgroundJs = `
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: "uploadImage",
-    title: "Upload Image to Get URL",
-    contexts: ["image"]
-  });
-});
-
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "uploadImage" && info.srcUrl) {
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      function: (url, appUrl) => {
-        const textarea = document.createElement('textarea');
-        textarea.value = url;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        window.open(appUrl + '#autoPaste=true', '_blank');
-      },
-      args: [info.srcUrl, '${appUrl}']
-    });
-  }
-});
-    `;
-
-    const popupHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body {
-      width: 350px;
-      padding: 16px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #ffffff;
-      color: #1e293b;
-      margin: 0;
-    }
-    h2 {
-      font-size: 18px;
-      font-weight: 700;
-      margin: 0 0 16px 0;
-      color: #0f172a;
-    }
-    .section {
-      margin-bottom: 16px;
-    }
-    .label {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    textarea {
-      width: 100%;
-      height: 100px;
-      padding: 8px;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 11px;
-      font-family: monospace;
-      resize: none;
-      background-color: #f8fafc;
-      box-sizing: border-box;
-    }
-    .button-group {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 6px;
-    }
-    button {
-      padding: 6px 16px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-    }
-    .btn-copy {
-      background-color: #3b82f6;
-      color: white;
-    }
-    .btn-copy:hover {
-      background-color: #2563eb;
-    }
-    .btn-fetch {
-      width: 100%;
-      padding: 10px;
-      background-color: #10b981;
-      color: white;
-      font-size: 14px;
-      margin-top: 8px;
-    }
-    .btn-fetch:hover {
-      background-color: #059669;
-    }
-    .loading {
-      text-align: center;
-      padding: 20px;
-      font-size: 13px;
-      color: #64748b;
-    }
-  </style>
-</head>
-<body>
-  <h2>Extract image links from webpage.</h2>
-  
-  <div id="content" style="display: none;">
-    <div class="section">
-      <div class="label">🔢 With numbering:</div>
-      <textarea id="withNumbering" readonly></textarea>
-      <div class="button-group">
-        <button id="copyNumbered" class="btn-copy">Copy</button>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="label">≡ Without numbering:</div>
-      <textarea id="withoutNumbering" readonly></textarea>
-      <div class="button-group">
-        <button id="copyPlain" class="btn-copy">Copy</button>
-      </div>
-    </div>
-
-    <button id="fetchBtn" class="btn-fetch">Fetch to Image Lite Pro</button>
-  </div>
-
-  <div id="loader" class="loading">
-    Extracting images...
-  </div>
-
-  <script src="popup.js"></script>
-</body>
-</html>
-    `;
-
-    const popupJs = `
-const appUrl = '${appUrl}';
-
-function extractImages() {
-  const imageMap = new Map(); // Use map to deduplicate by filename
-  
-  const addUrl = (url) => {
-    if (!url || !url.startsWith('http')) return;
-    
-    let normalized = url;
-    // Pinterest normalization
-    if (url.includes('i.pinimg.com')) {
-      normalized = url.replace(/\\/(?:236x|474x|564x|736x)\\//, '/originals/');
-    }
-    
-    const filename = normalized.split('/').pop().split('?')[0];
-    if (!imageMap.has(filename) || normalized.includes('/originals/')) {
-      imageMap.set(filename, url);
-    }
-  };
-
-  document.querySelectorAll('img').forEach(img => {
-    const sources = [
-      img.src,
-      img.dataset.src,
-      img.dataset.original,
-      img.dataset.lazy,
-      img.getAttribute('data-src'),
-      img.getAttribute('data-original-src')
-    ];
-    
-    sources.forEach(addUrl);
-    
-    if (img.srcset) {
-      const parts = img.srcset.split(',');
-      const bestPart = parts[parts.length - 1].trim().split(' ')[0];
-      addUrl(bestPart);
-    }
-  });
-  
-  const containers = document.querySelectorAll('div, section, header, footer, main, article, aside, [class*="bg-"], [class*="image"]');
-  containers.forEach(el => {
-    try {
-      const bg = window.getComputedStyle(el).backgroundImage;
-      if (bg && bg !== 'none' && bg.includes('url(')) {
-        const match = bg.match(/url\\\\(["']?([^"']+)["']?\\\\)/);
-        if (match && match[1]) addUrl(match[1]);
-      }
-    } catch (e) {}
-  });
-  
-  document.querySelectorAll('source').forEach(source => {
-    if (source.srcset) {
-      const parts = source.srcset.split(',');
-      const bestPart = parts[parts.length - 1].trim().split(' ')[0];
-      addUrl(bestPart);
-    }
-  });
-
-  document.querySelectorAll('a').forEach(a => {
-    const href = a.href;
-    if (href && href.match(/\\\\.(jpeg|jpg|gif|png|webp|svg)(\\\\?.*)?$/i)) {
-      addUrl(href);
-    }
-  });
-
-  return Array.from(imageMap.values());
-}
-
-chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-  chrome.scripting.executeScript({
-    target: {tabId: tabs[0].id},
-    function: extractImages
-  }, (results) => {
-    const images = results[0].result;
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('content').style.display = 'block';
-
-    if (!images || images.length === 0) {
-      document.getElementById('content').innerHTML = '<div class="loading">No images found on this page.</div>';
-      return;
-    }
-
-    const numberedText = images.map((url, i) => (i + 1) + ". " + url).join('\\n');
-    const plainText = images.join('\\n');
-
-    document.getElementById('withNumbering').value = numberedText;
-    document.getElementById('withoutNumbering').value = plainText;
-
-    document.getElementById('copyNumbered').onclick = () => {
-      navigator.clipboard.writeText(numberedText);
-      const btn = document.getElementById('copyNumbered');
-      btn.innerText = 'Copied!';
-      setTimeout(() => btn.innerText = 'Copy', 2000);
-    };
-
-    document.getElementById('copyPlain').onclick = () => {
-      navigator.clipboard.writeText(plainText);
-      const btn = document.getElementById('copyPlain');
-      btn.innerText = 'Copied!';
-      setTimeout(() => btn.innerText = 'Copy', 2000);
-    };
-
-    document.getElementById('fetchBtn').onclick = () => {
-      navigator.clipboard.writeText(plainText).then(() => {
-        window.open(appUrl + '#autoPaste=true', '_blank');
-      });
-    };
-  });
-});
-    `;
-    
-    zip.file("manifest.json", JSON.stringify(manifest, null, 2));
-    zip.file("background.js", backgroundJs.trim());
-    zip.file("popup.html", popupHtml.trim());
-    zip.file("popup.js", popupJs.trim());
-    
-    const content = await zip.generateAsync({ type: 'blob' });
-    saveAs(content, 'image-extractor-extension.zip');
-  };
-
-  const handleDownloadAll = async () => {
-    const successfulUploads = uploads.filter(u => (u.status === 'success' || u.status === 'error') && (u.originalFile instanceof File || u.compressedBlob));
-    if (successfulUploads.length === 0) return;
-
-    setIsZipping(true);
-    try {
-      const zip = new JSZip();
-      
-      successfulUploads.forEach((upload, index) => {
-        const blob = (upload.compressedBlob || upload.originalFile) as Blob;
-        let ext = upload.originalFile.name.split('.').pop() || 'jpg';
-        
-        if (compressEnabled) {
-          if (outputFormat === 'webp') ext = 'webp';
-          else if (outputFormat === 'jpeg') ext = 'jpg';
-          else if (outputFormat === 'png') ext = 'png';
-          else if (outputFormat === 'auto') {
-            const isTransparent = upload.originalFile.type === 'image/png' || upload.originalFile.type === 'image/webp';
-            ext = isTransparent ? 'webp' : 'jpg';
-          }
-        }
-        
-        const filename = `optimized_${upload.originalFile.name.split('.')[0]}_${index + 1}.${ext}`;
-        zip.file(filename, blob);
-      });
-
-      const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, 'optimized_images.zip');
-    } catch (error) {
-      console.error('Failed to create zip file', error);
-    } finally {
-      setIsZipping(false);
-    }
-  };
-
-  const handleDeleteUpload = (id: string) => {
-    setUploads(prev => prev.filter(u => u.id !== id));
-  };
-
-  const handleReplaceClick = (id: string) => {
-    setReplacingId(id);
-    if (replaceInputRef.current) {
-      replaceInputRef.current.click();
-    }
-  };
-
-  const handleForceUpload = useCallback(async (id: string) => {
-    const upload = uploads.find(u => u.id === id);
-    if (upload) {
-      updateUploadStatus(id, { status: 'uploading' });
-      
-      try {
-        let blobToUse: Blob | File | undefined = upload.compressedBlob || upload.originalFile;
-        
-        // Handle stub files after reload
-        if (blobToUse && !(blobToUse instanceof Blob) && (upload.url || upload.previewUrl)) {
-          const resp = await fetch(upload.url || upload.previewUrl);
-          if (resp.ok) {
-            blobToUse = await resp.blob();
-          }
-        }
-
-        if (!blobToUse || !(blobToUse instanceof Blob)) {
-          throw new Error("Local image data missing. Please re-upload.");
-        }
-
-        // Use name from originalFile stub if necessary
-        const fileName = (upload.originalFile as any).name || 'image.png';
-        const fileToUpload = new File([blobToUse], fileName, { type: blobToUse.type });
-        processSingleFile(id, fileToUpload, settingsRef.current, upload.originalUrl, true);
-      } catch (error: any) {
-        updateUploadStatus(id, { status: 'error', error: `Upload Failed: ${error.message}` });
-      }
-    }
-  }, [uploads, processSingleFile, updateUploadStatus]);
-
-  const handleRemoveBG = useCallback(async (id: string) => {
-    const upload = uploads.find(u => u.id === id);
-    if (!upload) return;
-
-    updateUploadStatus(id, { status: 'removing_bg' });
-
-    try {
-      const formData = new FormData();
-      let source: Blob | File | undefined = upload.compressedBlob || upload.originalFile;
-      
-      // If originalFile is just a metadata object (happens after reload), try to fetch from URL
-      if (source && !(source instanceof Blob) && (upload.url || upload.previewUrl)) {
-        try {
-          const resp = await fetch(upload.url || upload.previewUrl);
-          if (resp.ok) {
-            source = await resp.blob();
-          }
-        } catch (e) {
-          console.warn("Failed to fetch image for BG removal fallback", e);
-        }
-      }
-
-      if (!source || !(source instanceof Blob)) {
-        throw new Error("Local image data not found. Please re-upload the image.");
-      }
-      
-      formData.append("image_file", source, "image.png");
-      formData.append("size", "auto");
-
-      // Using the provided Remove.bg API key
-      const response = await fetch("https://api.remove.bg/v1.0/removebg", {
-        method: "POST",
-        headers: {
-          "X-Api-Key": "kWeEsu1kfsLT4dDHFwQzKPbf",
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.errors?.[0]?.title || `API Error: ${response.status}`);
-      }
-
-      const resultBlob = await response.blob();
-      const newPreviewUrl = URL.createObjectURL(resultBlob);
-      
-      const noBgFile = new File([resultBlob], `nobg_${Date.now()}.png`, { type: 'image/png' });
-
-      updateUploadStatus(id, { 
-        compressedBlob: resultBlob,
-        compressedSize: resultBlob.size,
-        previewUrl: newPreviewUrl,
-        status: 'uploading'
-      });
-
-      // Automatically re-upload the processed image to update the live URL
-      await processSingleFile(id, noBgFile, settingsRef.current, undefined, true);
-
-    } catch (error: any) {
-      console.error("Inline BG REMOVAL FAILED:", error);
-      updateUploadStatus(id, { status: 'error', error: `BG REMOVAL FAILED: ${error.message}` });
-    }
-  }, [uploads, updateUploadStatus, processSingleFile]);
-
-  const handleRemoveAllBG = async () => {
-    const pendingUploads = uploads.filter(u => u.status === 'success');
-    for (const upload of pendingUploads) {
-      await handleRemoveBG(upload.id);
-    }
-  };
-
-  const handleReplaceInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0 && replacingId) {
-      const file = e.target.files[0];
-      if (file.type.startsWith('image/')) {
-        setUploads(prev => prev.map(u => {
-          if (u.id === replacingId) {
-            return {
-              ...u,
-              originalFile: file,
-              originalSize: file.size,
-              status: 'pending',
-              previewUrl: URL.createObjectURL(file),
-              compressedBlob: undefined,
-              compressedSize: undefined,
-              url: undefined,
-              error: undefined
+            const url = new URL(data.long_url);
+            const params = url.searchParams;
+            const newContent = {
+              name1: params.get('n1') || params.get('name1') || "murru",
+              img1: params.get('i1') || params.get('img1') || "https://ik.imagekit.io/19imy4f1u/lite_1777432062255_b4O1TkoKUT.png",
+              name2: params.get('n2') || params.get('name2') || "sundari",
+              img2: params.get('i2') || params.get('img2') || "https://ik.imagekit.io/19imy4f1u/lite_1777432145117_9DRz3sAoev.png",
+              type: params.get('type') || 'gg'
             };
+            setContent(newContent);
+            setGenName1(newContent.name1);
+            setGenImg1(newContent.img1);
+            setGenName2(newContent.name2);
+            setGenImg2(newContent.img2);
+            setGenBondType(newContent.type);
+            setTimeout(() => setIsLoading(false), 1500);
+          } catch (e) {
+            console.error("Error parsing long url:", e);
+            window.location.href = data.long_url;
           }
-          return u;
-        }));
-        processSingleFile(replacingId, file, settingsRef.current);
+          return;
+        } else {
+          setTimeout(() => setIsLoading(false), 1500);
+        }
+      } else {
+        setTimeout(() => setIsLoading(false), 1500);
       }
+    };
+    checkShortLink();
+
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Security Features: Disable right-click & DevTools shortcuts
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent structural keys: F12, F11 (Fullscreen), ESC, PrintScreen
+      if (
+        e.key === 'F12' || e.keyCode === 123 ||
+        e.key === 'F11' || e.keyCode === 122 ||
+        e.key === 'Escape' ||
+        e.key === 'PrintScreen' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) ||
+        (e.ctrlKey && (e.key === 'U' || e.key === 'u')) || // View Source
+        (e.ctrlKey && (e.key === 'S' || e.key === 's')) || // Save Page
+        (e.ctrlKey && (e.key === 'P' || e.key === 'p')) || // Print
+        (e.ctrlKey && (e.key === 'A' || e.key === 'a')) || // Select All
+        (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i')) || // Mac DevTools
+        (e.metaKey && e.altKey && (e.key === 'U' || e.key === 'u')) || // Mac View Source
+        (e.metaKey && (e.key === 'S' || e.key === 's')) // Mac Save Page
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    const handleCopyCutPaste = (e: ClipboardEvent) => e.preventDefault();
+    const handleDragStart = (e: DragEvent) => e.preventDefault();
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('copy', handleCopyCutPaste);
+    document.addEventListener('cut', handleCopyCutPaste);
+    document.addEventListener('paste', handleCopyCutPaste);
+    document.addEventListener('dragstart', handleDragStart);
+
+    // Simple Anti-Debugging Trap
+    // (This will pause execution frequently if DevTools is open)
+    const antiDebugInterval = setInterval(() => {
+       const start = performance.now();
+       debugger;
+       if (performance.now() - start > 100) {
+         // If execution was paused, DevTools is likely open
+         console.clear();
+         console.log("%cStop!", "color: red; font-size: 50px; font-weight: bold;");
+       }
+    }, 2000);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('copy', handleCopyCutPaste);
+      document.removeEventListener('cut', handleCopyCutPaste);
+      document.removeEventListener('paste', handleCopyCutPaste);
+      document.removeEventListener('dragstart', handleDragStart);
+      clearInterval(antiDebugInterval);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('User accepted the install prompt');
     }
-    if (replaceInputRef.current) replaceInputRef.current.value = '';
-    setReplacingId(null);
+    setDeferredPrompt(null);
+    setIsInstallable(false);
   };
 
-  const mainContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (window.location.hash === '#autoPaste=true') {
-      // Clear the hash
-      window.history.replaceState(null, '', window.location.pathname);
-      
-      // Try to read clipboard
-      setTimeout(async () => {
-        try {
-          const text = await navigator.clipboard.readText();
-          if (text) {
-            setShowPasteArea(true);
-            setPasteText(text);
-          }
-        } catch (err) {
-          console.error('Failed to read clipboard automatically', err);
-        }
-      }, 500);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (mainContainerRef.current) {
-      mainContainerRef.current.focus();
-    }
-  }, []);
-
-  const totalOriginalSize = uploads.reduce((acc, u) => acc + u.originalSize, 0);
-  const totalCompressedSize = uploads.reduce((acc, u) => acc + (u.compressedSize || u.originalSize), 0);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#fdfaf6] flex flex-col items-center justify-center font-sans">
+        <motion.div
+           initial={{ scale: 0.8, opacity: 0 }}
+           animate={{ scale: 1, opacity: 1 }}
+           transition={{ duration: 0.5, ease: "easeOut" }}
+           className="flex flex-col items-center"
+        >
+          <Heart className="w-16 h-16 sm:w-24 sm:h-24 fill-pink-500 text-pink-500 animate-pulse drop-shadow-lg mb-6" />
+          <motion.h1 
+             initial={{ y: 10, opacity: 0 }}
+             animate={{ y: 0, opacity: 1 }}
+             transition={{ delay: 0.3 }}
+             className="text-3xl sm:text-5xl font-serif italic text-pink-600 font-bold"
+          >
+            Best Friends...
+          </motion.h1>
+          <motion.div 
+            className="mt-6 flex gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            <span className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+            <span className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+            <span className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
-    <div 
-      ref={mainContainerRef}
-      tabIndex={-1}
-      className="min-h-screen bg-slate-950 flex items-center justify-center p-4 text-white font-sans focus:outline-none"
-    >
-      <div className="bg-slate-900/80 backdrop-blur-xl w-full max-w-6xl rounded-3xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col md:flex-row h-auto md:h-[700px]">
-        
-        {/* Left Panel */}
-        <div className="w-full md:w-5/12 p-8 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col">
-          <div className="mb-6 flex justify-between items-start">
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight mb-1">
-                  Image<span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Lite</span>
-                </h1>
-                <p className="text-slate-400 text-xs text-center md:text-left">Smart Image Compressor & Uploader</p>
-              </div>
-              <button 
-                onClick={() => {
-                  setBgInputUrl('');
-                  setBgBlob(null);
-                  setBgResultImg(null);
-                  setShowBGRemover(!showBGRemover);
-                }}
-                className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 text-purple-400 rounded-lg text-xs font-bold transition-all border border-purple-500/30 group"
-                title="AI Background Remover"
-              >
-                <Wand2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                <span className="xl:inline">BG Remover</span>
-              </button>
+    <div className="min-h-screen bg-[#fdfaf6] py-8 sm:py-16 px-4 sm:px-8 selection:bg-[#e8e2d9] font-sans text-[#2d2d2d]">
+      {/* PWA Install Button */}
+      {isInstallable && (
+        <button 
+          onClick={handleInstallClick} 
+          className="fixed bottom-6 right-6 z-[100] bg-[#ff00ff] text-white p-4 rounded-full shadow-[0_4px_15px_rgba(255,0,255,0.5)] flex items-center justify-center animate-bounce hover:bg-pink-600 transition-colors"
+          title="Install App"
+        >
+          <Download className="w-6 h-6" />
+        </button>
+      )}
+
+      {/* Link Generator Modal */}
+      {isGeneratorOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 font-sans sm:p-6">
+          <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-md relative flex flex-col max-h-[85dvh] lg:max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300">
+            {/* Background Decorations */}
+            <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-pink-100 rounded-bl-full opacity-50 mix-blend-multiply pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-32 sm:h-32 bg-rose-100 rounded-tr-full opacity-50 mix-blend-multiply pointer-events-none"></div>
+
+            {/* Close Button */}
+            <button 
+              onClick={() => setIsGeneratorOpen(false)}
+              className="absolute top-4 right-4 bg-white/80 backdrop-blur-md rounded-full w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:bg-gray-100 text-2xl leading-none z-50 transition-colors shadow-sm"
+            >
+              &times;
+            </button>
+
+            {/* Header Container (Sticky) */}
+            <div className="pt-6 sm:pt-8 pb-2 text-center relative z-10 shrink-0">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-gray-800 italic">Create Your Bond</h2>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2 px-4">Upload photos and names to generate a custom link.</p>
             </div>
-            <div className="flex items-center gap-2">
-              {uploads.length > 0 && (
-                <button 
-                  onClick={() => setUploads([])}
-                  className="p-2 bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors group"
-                  title="Clear All"
-                >
-                  <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800 mb-6 space-y-4">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-300">
-                <Settings2 className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Settings</span>
-              </div>
-              <div className="flex flex-wrap gap-3 items-center">
-                <button
-                  onClick={handleDownloadExtension}
-                  className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 hover:text-blue-300 uppercase bg-blue-500/10 hover:bg-blue-500/20 px-2 py-1 rounded-md transition-colors"
-                  title="Download Chrome Extension to extract images from any website"
-                >
-                  <Download className="w-3 h-3" />
-                  Extension
-                </button>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Bulk Links</span>
-                  <button 
-                    onClick={() => setShowPasteArea(!showPasteArea)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${showPasteArea ? 'bg-purple-500' : 'bg-slate-700'}`}
-                  >
-                    <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${showPasteArea ? 'translate-x-5' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Compress</span>
-                  <button 
-                    onClick={() => setCompressEnabled(!compressEnabled)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${compressEnabled ? 'bg-emerald-500' : 'bg-slate-700'}`}
-                  >
-                    <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${compressEnabled ? 'translate-x-5' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Multiple</span>
-                  <button 
-                    onClick={() => setMultipleEnabled(!multipleEnabled)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${multipleEnabled ? 'bg-blue-500' : 'bg-slate-700'}`}
-                  >
-                    <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${multipleEnabled ? 'translate-x-5' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Auto-Copy</span>
-                  <button 
-                    onClick={() => setAutoCopy(!autoCopy)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${autoCopy ? 'bg-orange-500' : 'bg-slate-700'}`}
-                  >
-                    <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${autoCopy ? 'translate-x-5' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {showPasteArea && (
-              <div className="pt-4 border-t border-slate-800 space-y-3 animate-in fade-in slide-in-from-top-2">
-                <label className="text-xs font-medium text-slate-300 flex items-center gap-2">
-                  <LinkIcon className="w-3.5 h-3.5 text-blue-400" />
-                  Paste Image URLs (one per line or space-separated)
-                </label>
-                <textarea
-                  value={pasteText}
-                  onChange={(e) => setPasteText(e.target.value)}
-                  placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.png"
-                  className="w-full h-24 bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-slate-300 focus:outline-none focus:border-blue-500 resize-none"
-                  disabled={isFetchingLinks}
-                />
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-slate-400 font-medium">
-                    {isFetchingLinks ? `Loading ${fetchProgress.current} of ${fetchProgress.total}...` : ''}
-                  </div>
-                  <button
-                    onClick={handleLoadLinks}
-                    disabled={isFetchingLinks || !pasteText.trim()}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors"
-                  >
-                    {isFetchingLinks ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                    {isFetchingLinks ? 'Loading...' : 'Load Images'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-slate-500 uppercase mb-1">Server</span>
-                <select 
-                  value={server} 
-                  onChange={(e) => setServer(e.target.value as any)}
-                  className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
-                >
-                  <option value="imagekit">ImageKit</option>
-                  <option value="imgbb">ImgBB</option>
-                </select>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-slate-500 uppercase mb-1">Format</span>
-                <select 
-                  value={outputFormat} 
-                  onChange={(e) => setOutputFormat(e.target.value as any)}
-                  disabled={!compressEnabled}
-                  className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 disabled:opacity-50"
-                >
-                  <option value="auto">Auto (Smart)</option>
-                  <option value="webp">WebP</option>
-                  <option value="jpeg">JPEG</option>
-                  <option value="png">PNG</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col col-span-2 pt-2">
-                <button 
-                  onClick={() => setShowKeys(!showKeys)}
-                  className="flex items-center gap-2 text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase transition-colors"
-                >
-                  <LinkIcon className="w-3 h-3" />
-                  {showKeys ? 'Hide API Keys' : 'Manage API Keys'}
-                </button>
-                
-                {showKeys && (
-                  <div className="mt-3 space-y-3 p-3 bg-slate-950/50 rounded-xl border border-slate-800 animate-in fade-in slide-in-from-top-1">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase">ImageKit Public Key</label>
-                      <input 
-                        type="password"
-                        value={ikPublic}
-                        onChange={(e) => setIkPublic(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-[10px] text-slate-300 focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase">ImageKit Private Key</label>
-                      <input 
-                        type="password"
-                        value={ikPrivate}
-                        onChange={(e) => setIkPrivate(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-[10px] text-slate-300 focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase">ImgBB API Key</label>
-                      <input 
-                        type="password"
-                        value={ibbKey}
-                        onChange={(e) => setIbbKey(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-[10px] text-slate-300 focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-                    <button 
-                      onClick={() => {
-                        setIkPublic(IMAGEKIT_PUBLIC);
-                        setIkPrivate(IMAGEKIT_PRIVATE);
-                        setIbbKey(IMGBB_API_KEY);
-                      }}
-                      className="w-full text-[10px] font-bold text-red-400 hover:text-red-300 uppercase pt-1"
-                    >
-                      Reset to Defaults
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-col col-span-2">
-                <span className="text-[10px] font-bold text-slate-500 uppercase mb-1">Image Filter (Requires Compress)</span>
-                <select 
-                  value={imageFilter} 
-                  onChange={(e) => setImageFilter(e.target.value)}
-                  disabled={!compressEnabled}
-                  className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 disabled:opacity-50"
-                >
-                  <option value="none">Normal</option>
-                  <option value="grayscale(100%)">Grayscale</option>
-                  <option value="sepia(100%)">Sepia</option>
-                  <option value="invert(100%)">Invert</option>
-                  <option value="blur(4px)">Blur</option>
-                </select>
-              </div>
-            </div>
-
-            <div className={`flex flex-col transition-opacity ${!compressEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Target Size</span>
-                <span className="text-[10px] font-bold text-blue-400">{targetSize} KB</span>
-              </div>
-              <input 
-                type="range" 
-                min="50" 
-                max="1000" 
-                step="50"
-                value={targetSize} 
-                onChange={(e) => setTargetSize(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-              />
-            </div>
-          </div>
-
-          <div 
-            tabIndex={0}
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`flex-1 border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[180px] focus:outline-none focus:ring-2 focus:ring-blue-500/50
-              ${isDragging ? 'border-blue-500 bg-blue-500/10' : 'border-slate-700 hover:border-slate-500 hover:bg-slate-800/30'}`}
-          >
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
-              accept="image/*" 
-              multiple={multipleEnabled}
-              onChange={handleFileInput}
-            />
-            <input 
-              type="file" 
-              ref={replaceInputRef} 
-              className="hidden" 
-              accept="image/*" 
-              multiple={false}
-              onChange={handleReplaceInput}
-            />
-            <div className="w-14 h-14 bg-slate-800 rounded-full flex items-center justify-center mb-4 text-slate-400">
-              <UploadCloud className="w-6 h-6" />
-            </div>
-            <h3 className="font-semibold text-base text-slate-200">Upload Image{multipleEnabled ? 's' : ''}</h3>
-            <p className="text-xs text-slate-500 mt-2">Drag & Drop or CTRL+V</p>
-          </div>
-
-          {uploads.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Total Original</p>
-                <p className="text-base font-mono mt-1 text-slate-300">{formatBytes(totalOriginalSize)}</p>
-              </div>
-              <div className="bg-emerald-950/30 p-3 rounded-xl border border-emerald-900/50">
-                <p className="text-[10px] text-emerald-500 uppercase font-bold tracking-wider">Total Output</p>
-                <p className="text-base font-mono mt-1 text-emerald-400">{formatBytes(totalCompressedSize)}</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Panel */}
-        <div className="w-full md:w-7/12 bg-slate-950/50 flex flex-col relative overflow-hidden">
-          {uploads.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center opacity-40">
-              <ImageIcon className="w-20 h-20 text-slate-600 mb-4" />
-              <p className="font-medium text-slate-400">Optimized results will appear here</p>
-            </div>
-          ) : uploads.length === 1 ? (
-            <div className="flex-1 flex flex-col h-full overflow-hidden p-6">
-              <div className="flex justify-between items-center mb-4 shrink-0">
-                <h2 className="font-semibold text-slate-200 truncate pr-4">{uploads[0].originalFile.name}</h2>
-                <div className="flex items-center gap-3 shrink-0">
-                  <button 
-                    onClick={() => handleReplaceClick(uploads[0].id)}
-                    className="text-slate-400 hover:text-blue-400 transition-colors"
-                    title="Replace Image"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteUpload(uploads[0].id)}
-                    className="text-slate-400 hover:text-red-400 transition-colors"
-                    title="Remove Image"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                  <span className="shrink-0 flex items-center gap-2 border-l border-slate-700 pl-3 ml-1">
-                    {uploads[0].status === 'pending' && <><Loader2 className="w-4 h-4 text-slate-500 animate-spin" /><span className="text-xs text-slate-500">Pending</span></>}
-                    {uploads[0].status === 'compressing' && <><Loader2 className="w-4 h-4 text-blue-400 animate-spin" /><span className="text-xs text-blue-400">Compressing</span></>}
-                    {uploads[0].status === 'uploading' && <><Loader2 className="w-4 h-4 text-emerald-400 animate-spin" /><span className="text-xs text-emerald-400">Uploading</span></>}
-                    {uploads[0].status === 'removing_bg' && <><Loader2 className="w-4 h-4 text-purple-400 animate-spin" /><span className="text-xs text-purple-400">Removing BG</span></>}
-                    {uploads[0].status === 'success' && <><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span className="text-xs text-emerald-500">Success</span></>}
-                    {uploads[0].status === 'error' && <><AlertCircle className="w-4 h-4 text-red-500" /><span className="text-xs text-red-500">Error</span></>}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex-1 min-h-0 mb-6 rounded-2xl overflow-hidden border border-slate-700 bg-[url('https://www.transparenttextures.com/patterns/checkerboard.png')] bg-repeat flex items-center justify-center relative bg-slate-900/50 shadow-inner">
-                <img src={uploads[0].previewUrl} className="w-full h-full object-contain drop-shadow-2xl" alt="preview" />
-              </div>
-
-              <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 shrink-0">
-                <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
-                  <div className="flex items-center gap-2">
-                    <span>Original: {formatBytes(uploads[0].originalSize)}</span>
-                    {compressEnabled && uploads[0].compressedSize && (
-                      <>
-                        <ArrowRight className="w-3 h-3" />
-                        <span className="text-emerald-400">Compressed: {formatBytes(uploads[0].compressedSize)}</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {uploads[0].status === 'success' && (
-                      <button 
-                        onClick={() => handleRemoveBG(uploads[0].id)}
-                        className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 transition-colors font-semibold"
-                      >
-                        <Wand2 className="w-3.5 h-3.5" /> Remove BG
-                      </button>
-                    )}
-                    {uploads[0].status === 'success' && uploads[0].url && (
-                      <button 
-                        onClick={() => navigator.clipboard.writeText(uploads[0].url!)}
-                        className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition-colors font-semibold"
-                      >
-                        <Copy className="w-3.5 h-3.5" /> Copy Link
-                      </button>
-                    )}
-                    {(uploads[0].status === 'success' || uploads[0].status === 'error') && (
-                      <button 
-                        onClick={() => handleDownload(uploads[0])}
-                        className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 transition-colors font-semibold"
-                      >
-                        <Download className="w-3.5 h-3.5" /> Download
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {uploads[0].status === 'success' && uploads[0].url && (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        readOnly 
-                        value={uploads[0].url} 
-                        className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-blue-500" 
-                      />
-                      <button 
-                        onClick={() => setActiveQR(activeQR === uploads[0].id ? null : uploads[0].id)}
-                        className={`px-3 rounded-lg flex items-center justify-center transition-colors ${activeQR === uploads[0].id ? 'bg-purple-600 text-white border border-purple-500' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'}`}
-                        title="Show QR Code"
-                      >
-                        <QrCode className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={(e) => { 
-                          navigator.clipboard.writeText(uploads[0].url!); 
-                          const btn = e.currentTarget;
-                          const originalText = btn.innerText;
-                          btn.innerText = 'Copied!';
-                          btn.classList.add('bg-emerald-600');
-                          setTimeout(() => {
-                            btn.innerText = originalText;
-                            btn.classList.remove('bg-emerald-600');
-                          }, 2000);
-                        }} 
-                        className="bg-blue-600 hover:bg-blue-500 px-4 rounded-lg text-xs font-bold transition-colors text-white"
-                      >
-                        Copy
-                      </button>
-                    </div>
-                    {activeQR === uploads[0].id && (
-                      <div className="flex justify-center p-4 bg-white rounded-xl self-start shadow-xl border border-slate-200">
-                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(uploads[0].url)}`} alt="QR Code" className="w-32 h-32" />
-                      </div>
-                    )}
-                  </div>
-                )}
-                {uploads[0].status === 'error' && (
-                  <p className="text-xs text-red-400">{uploads[0].error}</p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col h-full overflow-hidden">
-              <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 shrink-0">
-                <h2 className="font-semibold text-slate-200">Uploads ({uploads.length})</h2>
-                <div className="flex items-center gap-3">
-                  {uploads.some(u => u.status === 'success' || u.status === 'error') && (
-                    <button 
-                      onClick={handleDownloadAll}
-                      disabled={isZipping}
-                      className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors"
-                    >
-                      {isZipping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Archive className="w-4 h-4" />}
-                      {isZipping ? 'Zipping...' : 'Download All (ZIP)'}
-                    </button>
-                  )}
-                  {uploads.some(u => u.status === 'success') && (
-                    <button 
-                      onClick={copyAllLinks}
-                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors"
-                    >
-                      {copiedAll ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      {copiedAll ? 'Copied All!' : 'Copy All Links'}
-                    </button>
-                  )}
-                </div>
-              </div>
+            
+            {/* Scrollable Body Container */}
+            <div className="px-5 sm:px-8 py-4 overflow-y-auto scrollbar-hide flex-1 min-h-0 relative z-10">
+              <div className="space-y-4 pb-8 sm:pb-4">
               
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {uploads.map(upload => (
-                  <ImageCard
-                    key={upload.id}
-                    upload={upload}
-                    onReplace={handleReplaceClick}
-                    onDelete={handleDeleteUpload}
-                    onDownload={handleDownload}
-                    onShowQR={(url) => setActiveQR(activeQR === upload.id ? null : upload.id)}
-                    onForceUpload={handleForceUpload}
-                    onRemoveBG={handleRemoveBG}
-                    formatBytes={formatBytes}
-                  />
-                ))}
+              {/* Person 1 */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group/card transition-colors">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-pink-100/50 rounded-bl-full opacity-50 pointer-events-none"></div>
+                <div className="flex items-center gap-2 mb-3 relative z-10">
+                   <Crown className="w-4 h-4 text-pink-500" />
+                   <h3 className="font-bold text-gray-800 text-sm">Person 1</h3>
+                </div>
+                <div className="flex gap-3 sm:gap-4 relative z-10">
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Name</label>
+                    <input 
+                      type="text" 
+                      value={genName1} 
+                      onChange={(e) => setGenName1(e.target.value)}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 sm:py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all shadow-sm"
+                      placeholder="E.g. Murru"
+                    />
+                  </div>
+                  <div className="w-20 sm:w-24 shrink-0">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Photo</label>
+                    <div className="relative group">
+                        <input 
+                          type="file" 
+                          id="file1"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                             const file = e.target.files?.[0];
+                             if (!file) return;
+                             
+                             const btn = document.getElementById('uploadText1');
+                             if(btn) btn.innerHTML = '<span class="animate-pulse">...</span>';
+                             
+                             const formData = new FormData();
+                             formData.append('file', file);
+                             formData.append('fileName', file.name);
+                             formData.append('publicKey', 'public_W8pXprjPHYrYwlWMf811dtUm2Og=');
+
+                             try {
+                                 const response = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+                                     method: 'POST',
+                                     headers: { 'Authorization': 'Basic ' + btoa('private_Wu/w/ZEmydjv/FbRgVKOffRxtNY=' + ':') },
+                                     body: formData
+                                 });
+                                 const data = await response.json();
+                                 if (data.url) setGenImg1(data.url);
+                             } catch (err) {
+                                 alert("Upload failed.");
+                             } finally {
+                                 if(btn) btn.innerHTML = 'CHANGE';
+                             }
+                          }}
+                        />
+                        <label htmlFor="file1" className="cursor-pointer block relative rounded-xl overflow-hidden shadow-sm aspect-square border-2 border-dashed border-gray-300 hover:border-pink-400 transition-all hover:scale-105 bg-white">
+                           {genImg1 ? (
+                              <>
+                                 <img src={genImg1} className="w-full h-full object-cover group-hover:opacity-60 transition-opacity" alt="Preview 1" />
+                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+                                     <span id="uploadText1" className="text-white font-bold text-[9px] uppercase tracking-wider bg-black/40 px-2 py-1 rounded-full">CHANGE</span>
+                                 </div>
+                              </>
+                           ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 group-hover:text-pink-500 transition-colors">
+                                 <span className="text-2xl leading-none mb-1">+</span>
+                                 <span id="uploadText1" className="text-[9px] font-bold uppercase tracking-wider">UPLOAD</span>
+                              </div>
+                           )}
+                        </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Person 2 */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group/card transition-colors">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-rose-100/50 rounded-bl-full opacity-50 pointer-events-none"></div>
+                <div className="flex items-center gap-2 mb-3 relative z-10">
+                   <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+                   <h3 className="font-bold text-gray-800 text-sm">Person 2</h3>
+                </div>
+                <div className="flex gap-3 sm:gap-4 relative z-10">
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Name</label>
+                    <input 
+                      type="text" 
+                      value={genName2} 
+                      onChange={(e) => setGenName2(e.target.value)}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 sm:py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all shadow-sm"
+                      placeholder="E.g. Sundari"
+                    />
+                  </div>
+                  <div className="w-20 sm:w-24 shrink-0">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Photo</label>
+                    <div className="relative group">
+                        <input 
+                          type="file" 
+                          id="file2"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                             const file = e.target.files?.[0];
+                             if (!file) return;
+                             
+                             const btn = document.getElementById('uploadText2');
+                             if(btn) btn.innerHTML = '<span class="animate-pulse">...</span>';
+                             
+                             const formData = new FormData();
+                             formData.append('file', file);
+                             formData.append('fileName', file.name);
+                             formData.append('publicKey', 'public_W8pXprjPHYrYwlWMf811dtUm2Og=');
+
+                             try {
+                                 const response = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+                                     method: 'POST',
+                                     headers: { 'Authorization': 'Basic ' + btoa('private_Wu/w/ZEmydjv/FbRgVKOffRxtNY=' + ':') },
+                                     body: formData
+                                 });
+                                 const data = await response.json();
+                                 if (data.url) setGenImg2(data.url);
+                             } catch (err) {
+                                 alert("Upload failed.");
+                             } finally {
+                                 if(btn) btn.innerHTML = 'CHANGE';
+                             }
+                          }}
+                        />
+                        <label htmlFor="file2" className="cursor-pointer block relative rounded-xl overflow-hidden shadow-sm aspect-square border-2 border-dashed border-gray-300 hover:border-rose-400 transition-all hover:scale-105 bg-white">
+                           {genImg2 ? (
+                              <>
+                                 <img src={genImg2} className="w-full h-full object-cover group-hover:opacity-60 transition-opacity" alt="Preview 2" />
+                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+                                     <span id="uploadText2" className="text-white font-bold text-[9px] uppercase tracking-wider bg-black/40 px-2 py-1 rounded-full">CHANGE</span>
+                                 </div>
+                              </>
+                           ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 group-hover:text-rose-500 transition-colors">
+                                 <span className="text-2xl leading-none mb-1">+</span>
+                                 <span id="uploadText2" className="text-[9px] font-bold uppercase tracking-wider">UPLOAD</span>
+                              </div>
+                           )}
+                        </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bond Type Selection */}
+              <div className="mt-6 mb-4">
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Relationship Type</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={`flex justify-center py-2.5 rounded-xl border-2 transition-all cursor-pointer ${genBondType === 'gg' ? 'border-pink-400 bg-pink-50' : 'border-gray-200 bg-white hover:border-pink-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="bondType" 
+                      value="gg"
+                      checked={genBondType === 'gg'}
+                      onChange={() => setGenBondType('gg')}
+                      className="hidden"
+                    />
+                    <span className={`text-[12px] font-bold tracking-tight ${genBondType === 'gg' ? 'text-pink-600' : 'text-gray-500'}`}>Girl 🎀 Girl</span>
+                  </label>
+                  <label className={`flex justify-center py-2.5 rounded-xl border-2 transition-all cursor-pointer ${genBondType === 'bb' ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="bondType" 
+                      value="bb"
+                      checked={genBondType === 'bb'}
+                      onChange={() => setGenBondType('bb')}
+                      className="hidden"
+                    />
+                    <span className={`text-[12px] font-bold tracking-tight ${genBondType === 'bb' ? 'text-indigo-600' : 'text-gray-500'}`}>Boy 💫 Boy</span>
+                  </label>
+                  <label className={`flex justify-center py-2.5 rounded-xl border-2 transition-all cursor-pointer ${genBondType === 'bg' ? 'border-violet-400 bg-violet-50' : 'border-gray-200 bg-white hover:border-violet-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="bondType" 
+                      value="bg"
+                      checked={genBondType === 'bg'}
+                      onChange={() => setGenBondType('bg')}
+                      className="hidden"
+                    />
+                    <span className={`text-[12px] font-bold tracking-tight ${genBondType === 'bg' ? 'text-violet-600' : 'text-gray-500'}`}>Boy ✨ Girl</span>
+                  </label>
+                  <label className={`flex justify-center py-2.5 rounded-xl border-2 transition-all cursor-pointer ${genBondType === 'gb' ? 'border-fuchsia-400 bg-fuchsia-50' : 'border-gray-200 bg-white hover:border-fuchsia-200'}`}>
+                    <input 
+                      type="radio" 
+                      name="bondType" 
+                      value="gb"
+                      checked={genBondType === 'gb'}
+                      onChange={() => setGenBondType('gb')}
+                      className="hidden"
+                    />
+                    <span className={`text-[12px] font-bold tracking-tight ${genBondType === 'gb' ? 'text-fuchsia-600' : 'text-gray-500'}`}>Girl 🌟 Boy</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Generated Link Box - Inside scrollable area */}
+              {generatedLink && (
+                <div className="mt-2 p-3 sm:p-4 bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 rounded-2xl relative animate-in slide-in-from-bottom-4 zoom-in-95 duration-500 shadow-inner">
+                  <p className="text-[10px] font-bold text-pink-500 uppercase tracking-wider mb-2">Your Magic Link</p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input 
+                      type="text" 
+                      readOnly 
+                      value={generatedLink}
+                      className="flex-1 w-full bg-white border border-pink-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-600 outline-none focus:ring-2 focus:ring-pink-400 transition-all"
+                    />
+                    <button 
+                      onClick={copyToClipboard}
+                      className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                        isCopied 
+                          ? 'bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)]' 
+                          : 'bg-white border border-pink-200 text-pink-600 hover:bg-pink-50 shadow-sm'
+                      }`}
+                    >
+                      {isCopied ? 'Copied!' : 'Copy Link'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* Background Remover Modal (RDX Style) */}
-      {showBGRemover && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="w-full max-w-2xl bg-[#0b0f15] border border-[#00c2ff]/20 rounded-[2.5rem] overflow-hidden shadow-[0_30px_50px_rgba(0,0,0,0.7),0_0_20px_rgba(0,160,255,0.2)] flex flex-col max-h-[90vh]">
-            {/* Header */}
-            <div className="p-6 border-b border-[#00c2ff]/10 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#00c2ff]/10 rounded-xl">
-                  <Wand2 className="w-5 h-5 text-[#00c2ff] drop-shadow-[0_0_8px_#00a6ff]" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white tracking-tight">✂️ Background Remover</h2>
-                  <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest border-l-2 border-[#00b4d8] pl-2 mt-1">RDX TOOLS — Image URL dein</p>
-                </div>
-              </div>
+            {/* Footer Container (Sticky) */}
+            <div className="p-4 sm:p-6 pb-6 sm:pb-8 relative z-10 shrink-0 bg-white/95 backdrop-blur-md border-t border-gray-50 shadow-[0_-10px_20px_rgba(255,255,255,0.8)]">
               <button 
-                onClick={() => setShowBGRemover(false)}
-                className="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition-colors"
+                onClick={generateLink}
+                disabled={isGenerating}
+                className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all shadow-[0_10px_20px_rgba(244,63,94,0.3)] hover:shadow-[0_10px_25px_rgba(244,63,94,0.4)] transform hover:-translate-y-0.5 text-sm sm:text-base flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
               >
-                <X className="w-6 h-6" />
+                {isGenerating ? (
+                   <>
+                     <span className="animate-pulse">Creating ✨...</span>
+                   </>
+                ) : (
+                   <>
+                     <span>Spark Magic</span>
+                     <span className="text-xl group-hover:animate-bounce">✨</span>
+                   </>
+                )}
               </button>
             </div>
 
-            <div className="p-8 overflow-y-auto space-y-6 flex-1">
-              {/* API Status Badge */}
-              <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-2 w-fit">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-bold text-emerald-400 uppercase">API Key Connected • Remove.bg Ready</span>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
-                  <LinkIcon className="w-3 h-3 inline mr-1" /> Image Source URL or File
-                </label>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1 flex gap-2">
-                    <input 
-                      type="url"
-                      value={bgInputUrl}
-                      onChange={(e) => {
-                        setBgInputUrl(e.target.value);
-                        setBgBlob(null);
-                      }}
-                      placeholder="https://example.com/photo.jpg"
-                      className="flex-1 bg-[#0c121c] border border-white/10 rounded-2xl px-5 py-3.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00b4d8]/50 transition-all shadow-inner"
-                    />
-                    <label className="p-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl cursor-pointer text-slate-400 transition-colors shrink-0">
-                      <ImageIcon className="w-5 h-5" />
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        accept="image/*"
-                        onChange={(e) => {
-                          if (e.target.files?.[0]) {
-                            setBgBlob(e.target.files[0]);
-                            setBgInputUrl('');
-                            setBgResultImg(null);
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-                  <button 
-                    onClick={() => handleRemoveBGUrl(bgInputUrl, bgBlob)}
-                    disabled={isRemovingBgInternal || (!bgInputUrl && !bgBlob)}
-                    className="px-8 py-3.5 bg-gradient-to-r from-[#001e33] to-[#00101f] border border-[#00a6ff] hover:border-[#3cc5ff] hover:shadow-[0_0_20px_#0080ffaa] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-full transition-all text-sm uppercase tracking-wider min-w-[200px]"
-                  >
-                    {isRemovingBgInternal ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Working magic...</span>
-                      </div>
-                    ) : (
-                      <span className="flex items-center gap-2">⚡ Remove Background</span>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Input Image</label>
-                  <div className="aspect-square bg-[#0b0f15] rounded-3xl border border-white/5 flex items-center justify-center overflow-hidden shadow-inner relative group">
-                    {bgInputUrl || bgBlob ? (
-                      <img 
-                        src={bgBlob ? URL.createObjectURL(bgBlob) : bgInputUrl} 
-                        alt="Preview" 
-                        className="w-full h-full object-contain" 
-                        referrerPolicy="no-referrer" 
-                      />
-                    ) : (
-                      <div className="text-slate-700 flex flex-col items-center gap-2">
-                        <ImageIcon className="w-10 h-10 opacity-20" />
-                        <span className="text-[10px] font-bold tracking-widest">NO IMAGE SELECTED</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Result (Transparent PNG)</label>
-                  <div className="aspect-square bg-[url('https://www.transparenttextures.com/patterns/checkerboard.png')] bg-repeat bg-[#0b0f15] rounded-3xl border border-[#00c2ff]/10 flex items-center justify-center overflow-hidden relative shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)]">
-                    {bgResultImg ? (
-                      <img src={bgResultImg} alt="Result" className="w-full h-full object-contain animate-in zoom-in-95 duration-500 shadow-2xl p-4" />
-                    ) : (
-                      <div className="text-slate-700 flex flex-col items-center gap-2">
-                        {isRemovingBgInternal ? (
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="w-12 h-12 border-4 border-[#00c2ff]/20 border-t-[#00c2ff] rounded-full animate-spin shadow-[0_0_15px_rgba(0,194,255,0.3)]" />
-                            <span className="text-[10px] font-bold tracking-widest animate-pulse text-[#00c2ff]">MAGIC IN PROGRESS...</span>
-                          </div>
-                        ) : (
-                          <>
-                            <Wand2 className="w-10 h-10 opacity-10" />
-                            <span className="text-[10px] font-bold tracking-widest">TRANSPARENT PNG</span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {bgResultImg && (
-                <div className="flex gap-3 animate-in slide-in-from-bottom-2 duration-300">
-                  <a 
-                    href={bgResultImg} 
-                    download="rdx-nobg.png"
-                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 uppercase tracking-widest text-xs"
-                  >
-                    <Download className="w-4 h-4" /> Download PNG
-                  </a>
-                  <button 
-                    onClick={() => {
-                      fetch(bgResultImg).then(r => r.blob()).then(blob => {
-                        const item = new ClipboardItem({'image/png': blob});
-                        navigator.clipboard.write([item]);
-                        alert('Copied image to clipboard!');
-                      });
-                    }}
-                    className="px-6 flex items-center justify-center bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/10"
-                  >
-                    <Copy className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="p-5 bg-black/40 border-t border-white/5 text-center">
-              <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em]">© RDX TOOLS — SARDAR RDX</p>
-            </div>
           </div>
         </div>
       )}
-    </div>
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-[#e8e2d9] p-6 sm:p-14 lg:p-20 relative overflow-hidden">
+        
+        {/* Decorative corner accent */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#e8e2d9] rounded-bl-full opacity-60 mix-blend-multiply blur-xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#d4c8bc] rounded-tr-full opacity-30 mix-blend-multiply blur-2xl pointer-events-none"></div>
 
+        {/* Root content flow block */}
+        <motion.div
+           initial="hidden"
+           animate="visible"
+           variants={{
+             hidden: { opacity: 1 },
+             visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+           }}
+           className="relative z-10 flow-root"
+        >
+
+          {/* Header Title */}
+          <motion.div
+             variants={{
+                hidden: { opacity: 0, y: -20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 1.2, ease: "easeOut" } }
+             }}
+             className="mb-8 sm:mb-12 mt-16 sm:mt-0 relative z-20"
+          >
+            {/* Tom & Jerry Sticker Header Image */}
+            <motion.img
+               initial={{ opacity: 0, rotate: 10, scale: 0.8 }}
+               animate={{ opacity: 1, rotate: -5, scale: 1 }}
+               transition={{ duration: 1.5, delay: 0.5 }}
+               src="https://ik.imagekit.io/19imy4f1u/lite_1777281639765_55fR5xSpF.png"
+               className="absolute -top-12 sm:-top-24 right-0 sm:right-12 w-[180px] sm:w-[320px] lg:w-[450px] z-20 object-contain drop-shadow-xl pointer-events-none"
+               alt="Tom and Jerry"
+            />
+
+            <div className="inline-block bg-[#f1ebe4] text-[#8a7e72] px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-left shadow-sm relative z-30">Personal Dedication</div>
+            <h1 className="font-serif text-[#1a1a1a] select-none text-left block relative z-30" style={{ lineHeight: 0.9 }}>
+              <span className="text-5xl sm:text-7xl lg:text-[8rem] font-bold inline-block align-middle tracking-tighter">
+                love 
+                <motion.span
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  className="inline-block ml-2 sm:ml-4 align-middle"
+                >
+                  <Heart className="w-8 h-8 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-[#c28e7e] fill-[#c28e7e] mb-2 sm:mb-4" />
+                </motion.span>
+              </span>
+              <br/>
+              <span className="text-4xl sm:text-6xl lg:text-[7rem] ml-10 sm:ml-24 lg:ml-32 inline-block tracking-tighter italic text-[#c28e7e] relative">
+                you
+              </span>
+            </h1>
+          </motion.div>
+
+          {/* First Float Image */}
+          <motion.div
+             variants={{
+                hidden: { opacity: 0, scale: 0.95 },
+                visible: { opacity: 1, scale: 1, transition: { duration: 1, ease: "easeOut" } }
+             }}
+             className="float-right clear-right w-[40%] max-w-[150px] sm:max-w-[260px] ml-4 sm:ml-8 mb-4 sm:mb-8 z-30 relative"
+          >
+             <ImageFrame 
+               src={img1} 
+               alt={name1} 
+               rotateClass="rotate-[2deg] sm:rotate-[4deg]" 
+               name={name1}
+             />
+          </motion.div>
+
+          {/* Second Float Image (directly below first float on the right) */}
+          <motion.div
+             variants={{
+                hidden: { opacity: 0, scale: 0.95 },
+                visible: { opacity: 1, scale: 1, transition: { duration: 1, ease: "easeOut", delay: 0.2 } }
+             }}
+             className="float-right clear-right w-[42%] max-w-[160px] sm:max-w-[280px] ml-4 sm:ml-8 mb-4 sm:mb-8 z-30 relative"
+          >
+             <ImageFrame 
+               src={img2} 
+               alt={name2} 
+               rotateClass="-rotate-[2deg] sm:-rotate-[3deg]" 
+               name={name2}
+             />
+          </motion.div>
+
+          {/* Text content wrapping around both floats */}
+          <div className="text-[13px] sm:text-[15px] lg:text-[16px] text-[#4a4540] italic leading-[1.6] sm:leading-[1.7] text-left sm:text-justify max-w-none font-medium">
+            {words.map((word, i) => (
+              <motion.span
+                key={i}
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: { opacity: 1, transition: { duration: 0.01 } },
+                }}
+                className="inline-block"
+                style={{ marginRight: word === '' ? '0' : '0.25em' }}
+              >
+                {word}
+              </motion.span>
+            ))}
+            
+            {/* Added extra text to fill the empty floated space! */}
+            <motion.div
+               variants={{
+                  hidden: { opacity: 0 },
+                  visible: { opacity: 1, transition: { duration: 2, delay: 1 } }
+               }}
+               className="pt-4 sm:pt-16 mt-8 sm:mt-16 font-cursive text-[22px] sm:text-4xl lg:text-5xl text-[#c28e7e] leading-[2] sm:leading-[2.5] text-left drop-shadow-sm opacity-90 pb-8 clear-both w-full block relative"
+            >
+              Love you best friend ❤️ <br />
+              Love you best friend ❤️ <br />
+              Love you best friend ❤️ <br />
+              Love you best friend ❤️ <br />
+              Love you best friend ❤️ <br />
+              Love you best friend ❤️ <br />
+              Love you best friend ❤️ <br />
+              Love you best friend ❤️
+
+              <motion.img 
+                 initial={{ opacity: 0, scale: 0.5 }}
+                 animate={{ opacity: 0.5, scale: 1 }}
+                 transition={{ duration: 2, delay: 1.5 }}
+                 src="https://ik.imagekit.io/19imy4f1u/lite_1777281546218_Yle4AWx7QO.png"
+                 className="absolute top-1/4 -left-12 sm:-left-32 w-48 sm:w-80 lg:w-[400px] z-0 mix-blend-multiply pointer-events-none transform rotate-12"
+                 alt="Butterflies"
+              />
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Small footer accent */}
+        <motion.div 
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           transition={{ delay: 3, duration: 2 }}
+           className="mt-16 text-center clear-both relative"
+        >
+           {/* Butterflies Sticker */}
+           <motion.img 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              transition={{ duration: 2, delay: 1 }}
+              src="https://ik.imagekit.io/19imy4f1u/lite_1777281546218_Yle4AWx7QO.png"
+              className="absolute -bottom-16 -right-12 sm:-bottom-24 sm:-right-20 w-64 sm:w-96 lg:w-[450px] z-0 mix-blend-multiply pointer-events-none transform -rotate-6"
+              alt="Butterflies"
+           />
+           <div className="inline-block w-16 h-[2px] bg-[#c28e7e] opacity-50 relative z-10"></div>
+           <motion.p 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 1, delay: 0.2 }}
+             className="font-serif italic font-bold text-2xl sm:text-3xl mt-4 text-[#8a7e72] relative z-10"
+           >
+             forever & always
+           </motion.p>
+        </motion.div>
+
+        {/* NEW SECTION: Artistic Circular Layout */}
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="mt-20 pt-16 border-t-2 border-dashed border-[#e8e2d9] relative w-full flex flex-col items-center"
+        >
+          {/* Top Hearts / Pulse Line */}
+          <div className="w-full flex items-center justify-between px-2 sm:px-12 mb-12 text-[#e11d48]">
+            <div className="flex-1 h-[2px] bg-[#e11d48] relative">
+               <div className="absolute -top-1 right-0 w-3 h-3 rounded-full bg-[#e11d48]"></div>
+            </div>
+            <Heart 
+              className="mx-4 sm:mx-8 animate-pulse w-8 h-8 sm:w-12 sm:h-12 fill-[#e11d48] text-[#e11d48] filter drop-shadow-md cursor-pointer pointer-events-auto" 
+              onDoubleClick={() => setIsGeneratorOpen(true)}
+            />
+            <div className="flex-1 h-[2px] bg-[#e11d48] relative">
+               <div className="absolute -top-1 left-0 w-3 h-3 rounded-full bg-[#e11d48]"></div>
+            </div>
+          </div>
+
+          {/* Circular Frames Container */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16 w-full px-4"
+          >
+            
+            {/* Left Circular Frame */}
+            <div className="relative group">
+              <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#fb7185] p-1 shadow-[0_0_25px_rgba(251,113,133,0.6)] group-hover:scale-105 transition-transform duration-500 bg-white">
+                 <img src={img1} className="w-full h-full object-cover rounded-full" alt={name1} />
+              </div>
+              <Heart className="absolute -bottom-2 -left-4 w-10 h-10 sm:w-14 sm:h-14 text-red-500 fill-red-500 drop-shadow-lg rotate-[-20deg] animate-bounce" style={{animationDuration: '3s'}} />
+              <div className="absolute top-4 -left-6 text-3xl opacity-80 filter drop-shadow hover:scale-125 transition-transform duration-300">🥺</div>
+            </div>
+
+            {/* Center Text Area */}
+            <div className="flex flex-col items-center justify-center text-center max-w-sm mt-4 md:mt-0">
+               <motion.h2 
+                 initial={{ opacity: 0, scale: 0.8 }}
+                 whileInView={{ opacity: 1, scale: 1 }}
+                 viewport={{ once: true }}
+                 transition={{ duration: 0.8, delay: 0.4 }}
+                 className="font-cursive text-5xl sm:text-6xl font-bold mb-6 text-[#1a1a1a] drop-shadow-sm tracking-wide"
+               >
+                 Best Friends
+               </motion.h2>
+               <div className="flex items-center gap-3">
+                  <span className="text-3xl filter drop-shadow-sm rotate-[-10deg]">🦋</span>
+                  <span className="text-4xl filter drop-shadow-sm animate-pulse">✨</span>
+                  <span className="text-3xl filter drop-shadow-sm rotate-[10deg]">🦋</span>
+               </div>
+            </div>
+
+            {/* Right Circular Frame */}
+            <div className="relative group">
+              <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#fb7185] p-1 shadow-[0_0_25px_rgba(251,113,133,0.6)] group-hover:scale-105 transition-transform duration-500 bg-white">
+                 <img src={img2} className="w-full h-full object-cover rounded-full" alt={name2} />
+              </div>
+              <Heart className="absolute -top-4 -right-4 w-10 h-10 sm:w-14 sm:h-14 text-red-500 fill-red-500 drop-shadow-lg rotate-[20deg] animate-bounce" style={{animationDuration: '2.5s'}} />
+              <div className="absolute bottom-4 -right-6 text-3xl opacity-80 filter drop-shadow hover:scale-125 transition-transform duration-300">🥺</div>
+            </div>
+          </motion.div>
+
+          {/* Bottom Dictionary & Quotes */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="flex flex-col md:flex-row items-start justify-between w-full mt-16 gap-10 md:gap-16 px-2 sm:px-8"
+          >
+            
+            <motion.div 
+              initial={{ x: -30, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="flex-1 bg-[#fdfaf6] p-6 rounded-2xl border border-[#e8e2d9] shadow-sm"
+            >
+              <motion.h3 
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="font-serif text-6xl text-[#1a1a1a] mb-2 leading-none tracking-tighter"
+              >
+                LOVE
+              </motion.h3>
+              <motion.p 
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="font-cursive text-2xl text-[#8a7e72] mb-6"
+              >
+                Can't stop loving you!
+              </motion.p>
+              <div className="relative">
+                <div className="absolute -left-2 -top-2 text-4xl text-[#c28e7e] font-serif opacity-30">"</div>
+                <motion.p 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                  className="font-serif italic text-lg sm:text-xl text-[#4a4540] border-l-2 border-[#c28e7e] pl-5 leading-relaxed"
+                >
+                  I love you not only for what you are, but for what I am when I am with you.
+                </motion.p>
+              </div>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1, delay: 0.8 }}
+                className="mt-8 font-cursive text-4xl text-center text-[#1a1a1a] transform -rotate-3 hover:rotate-3 transition-transform duration-500"
+              >
+                Sweet besties
+              </motion.div>
+            </motion.div>
+
+            <motion.div 
+               initial={{ x: 30, opacity: 0 }}
+               whileInView={{ x: 0, opacity: 1 }}
+               viewport={{ once: true }}
+               transition={{ duration: 0.8, delay: 0.8 }}
+               className="flex-1 bg-white p-6 rounded-2xl border border-[#e8e2d9] shadow-sm"
+            >
+               <div className="flex items-end gap-3 mb-6">
+                 <motion.h3 
+                   initial={{ opacity: 0, y: -10 }}
+                   whileInView={{ opacity: 1, y: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ duration: 0.6, delay: 0.2 }}
+                   className="font-serif text-5xl text-[#1a1a1a] leading-none"
+                 >
+                   love:
+                 </motion.h3>
+                 <motion.span 
+                   initial={{ opacity: 0 }}
+                   whileInView={{ opacity: 1 }}
+                   viewport={{ once: true }}
+                   transition={{ duration: 0.6, delay: 0.4 }}
+                   className="text-[#8a7e72] mb-1 font-mono text-sm"
+                 >
+                   [luv] - n.
+                 </motion.span>
+               </div>
+               <div className="space-y-4">
+                 <motion.p 
+                   initial={{ opacity: 0, x: 20 }}
+                   whileInView={{ opacity: 1, x: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ duration: 0.6, delay: 0.6 }}
+                   className="font-sans text-sm sm:text-base text-[#4a4540] leading-relaxed"
+                 >
+                   <strong className="text-[#1a1a1a]">1.</strong> an intense affection for another person based on personal or familial ties.
+                 </motion.p>
+                 <motion.p 
+                   initial={{ opacity: 0, x: 20 }}
+                   whileInView={{ opacity: 1, x: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ duration: 0.6, delay: 0.8 }}
+                   className="font-sans text-sm sm:text-base text-[#4a4540] leading-relaxed"
+                 >
+                   <strong className="text-[#1a1a1a]">2.</strong> the deep tenderness, affection, and concern felt for a person with whom one has a relationship.
+                 </motion.p>
+               </div>
+               <motion.div 
+                 initial={{ opacity: 0, y: 10 }}
+                 whileInView={{ opacity: 1, y: 0 }}
+                 viewport={{ once: true }}
+                 transition={{ duration: 0.6, delay: 1 }}
+                 className="flex justify-center mt-6 gap-6 text-[#c28e7e]"
+               >
+                  <span className="flex items-center gap-2 font-cursive text-xl"><Heart className="w-5 h-5"/> forever</span>
+                  <span className="flex items-center gap-2 font-cursive text-xl">always <Heart className="w-5 h-5"/></span>
+               </motion.div>
+            </motion.div>
+
+          </motion.div>
+
+          <div className="w-full mt-10 flex items-center justify-between px-2 sm:px-12 text-[#e11d48]">
+            <Heart className="w-8 h-8 fill-transparent text-[#e11d48]" />
+            <div className="flex-1 h-[1px] bg-[#e11d48] mx-4 opacity-30"></div>
+            <Heart className="w-8 h-8 fill-transparent text-[#e11d48]" />
+          </div>
+
+          {/* NEW SECTION: Love You Diagonal Photo Frames */}
+          <motion.div 
+            initial={{ opacity: 0, y: 50, rotateX: 10 }}
+            whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 1.2 }}
+            className="w-full mt-24 mb-16 bg-gradient-to-br from-[#4a4a4a] via-[#1a1a1a] to-black rounded-3xl p-4 sm:p-8 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
+          >
+              
+              {/* Background Glows to simulate the lighting in the image */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-20 blur-3xl pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-20 blur-3xl pointer-events-none"></div>
+
+              {/* Center Necklace Icon */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center pointer-events-none mt-2 sm:mt-4">
+                 {/* Fake V-shaped chain */}
+                 <div className="w-[60px] sm:w-[100px] h-[50px] sm:h-[80px] border-b-[1.5px] border-r-[1.5px] border-l-[1.5px] border-gray-300 rounded-b-full opacity-70 -mb-1"></div>
+                 <div className="relative flex items-center justify-center">
+                   {/* Outer Silver Heart */}
+                   <Heart className="w-10 h-10 sm:w-16 sm:h-16 text-gray-400 fill-[#e2e8f0] drop-shadow-[0_5px_15px_rgba(255,255,255,0.4)]" />
+                   {/* Inner dark core */}
+                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 sm:w-6 sm:h-6 bg-black rounded-full flex items-center justify-center shadow-[inset_0_2px_4px_rgba(255,255,255,0.5)]">
+                      <Heart className="w-3 h-3 sm:w-4 sm:h-4 text-[#e2e8f0] fill-[#e2e8f0]" />
+                   </div>
+                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 grid-rows-2 gap-4 sm:gap-8 relative z-10 items-center">
+                  {/* Top Left: LOVE Text */}
+                  <div className="flex items-end justify-center sm:justify-end text-center sm:text-right h-full pb-4 sm:pb-8">
+                     <motion.span 
+                       initial={{ opacity: 0, scale: 0.8, x: -30 }}
+                       whileInView={{ opacity: 1, scale: 1, x: 0 }}
+                       viewport={{ once: true }}
+                       transition={{ duration: 1, delay: 0.3 }}
+                       className="font-serif text-[4.5rem] sm:text-[7rem] lg:text-[9rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-300 to-gray-600 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] leading-[0.75] italic font-bold"
+                     >
+                       L<span className="text-[2.5rem] sm:text-[4.5rem] lg:text-[6rem]">ove</span>
+                     </motion.span>
+                  </div>
+
+                  {/* Top Right: Image Frame */}
+                  <div className="bg-white p-2 pb-8 sm:p-3 sm:pb-10 shadow-[0_10px_25px_rgba(0,0,0,0.8)] transform rotate-3 hover:scale-105 transition-transform duration-300 relative z-10 w-[90%] mx-auto">
+                     {/* Blurred inner drop shadow simulation */}
+                     <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.3)] pointer-events-none z-20"></div>
+                     <div className="w-full aspect-[3/4] bg-gray-100 overflow-hidden relative">
+                       <img src={img1} className="w-full h-full object-cover" alt={name1} />
+                     </div>
+                  </div>
+
+                  {/* Bottom Left: Image Frame */}
+                  <div className="bg-white p-2 pb-8 sm:p-3 sm:pb-10 shadow-[0_10px_25px_rgba(0,0,0,0.8)] transform -rotate-2 hover:scale-105 transition-transform duration-300 relative z-10 w-[90%] mx-auto">
+                     <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.3)] pointer-events-none z-20"></div>
+                     <div className="w-full aspect-[3/4] bg-gray-100 overflow-hidden relative">
+                        <img src={img2} className="w-full h-full object-cover" alt={name2} />
+                     </div>
+                  </div>
+
+                  {/* Bottom Right: YOU Text */}
+                  <div className="flex items-start justify-center sm:justify-start text-center sm:text-left h-full pt-4 sm:pt-8">
+                     <motion.span 
+                       initial={{ opacity: 0, scale: 0.8, x: 30 }}
+                       whileInView={{ opacity: 1, scale: 1, x: 0 }}
+                       viewport={{ once: true }}
+                       transition={{ duration: 1, delay: 0.5 }}
+                       className="font-serif text-[4.5rem] sm:text-[7rem] lg:text-[9rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-300 to-gray-600 drop-shadow-[0_4px_6px_rgba(0,0,0,0.9)] leading-[0.75] italic font-bold"
+                     >
+                       Y<span className="text-[2.5rem] sm:text-[4.5rem] lg:text-[6rem]">ou</span>
+                     </motion.span>
+                  </div>
+              </div>
+          </motion.div>
+
+          {/* NEW SECTION: Premium Luxury Circular Friendship Frames */}
+          <motion.div 
+             initial={{ opacity: 0, scale: 0.95 }}
+             whileInView={{ opacity: 1, scale: 1 }}
+             viewport={{ once: true, margin: "-100px" }}
+             transition={{ duration: 1.5 }}
+             className="w-full mt-24 mb-16 bg-[#fffaf5] relative shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-4 sm:p-12 flex items-center justify-center min-h-[500px] sm:min-h-[700px] overflow-hidden"
+          >
+             {/* Luxury Red Inner Border */}
+             <div className="absolute inset-3 sm:inset-6 border-[3px] sm:border-[6px] border-[#d32f2f] pointer-events-none z-10 shadow-[inset_0_0_20px_rgba(211,47,47,0.1)] rounded-sm"></div>
+             
+             {/* Gold Inner Accent */}
+             <div className="absolute inset-5 sm:inset-10 border-[1px] sm:border-[2px] border-[#d4af37] pointer-events-none z-10 opacity-60 rounded-sm"></div>
+
+             {/* Top Left: Best Friend */}
+             <motion.div 
+               initial={{ opacity: 0, x: -30, rotate: -3 }}
+               whileInView={{ opacity: 1, x: 0, rotate: -3 }}
+               viewport={{ once: true }}
+               transition={{ duration: 1, delay: 0.3 }}
+               className="absolute top-10 left-8 sm:top-16 sm:left-16 z-20 flex items-center gap-1 sm:gap-3 opacity-90"
+             >
+                <span className="font-cursive text-2xl sm:text-5xl text-[#0a2342]">Best</span>
+                <span className="text-xl sm:text-4xl filter drop-shadow-md">🧸💞</span>
+                <span className="font-cursive text-2xl sm:text-5xl text-[#0a2342]">Friend</span>
+             </motion.div>
+
+             {/* Top Right: Floral Accent */}
+             <div className="absolute top-8 right-6 sm:top-14 sm:right-14 z-20 text-4xl sm:text-7xl filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]">
+                🌹🌿
+             </div>
+
+             {/* Center Overlapping Circles */}
+             <div className="flex items-center justify-center relative z-20 w-full max-w-4xl pt-16 pb-16">
+                {/* Left Profile */}
+                <div className="w-[160px] h-[160px] sm:w-[320px] sm:h-[320px] rounded-full p-1 sm:p-2 bg-gradient-to-br from-[#d4af37] via-[#fff] to-[#d4af37] shadow-[0_20px_40px_rgba(0,0,0,0.6)] z-20 transform hover:scale-105 transition-transform duration-500">
+                    <div className="w-full h-full rounded-full overflow-hidden border-[3px] sm:border-[6px] border-white bg-gray-100">
+                        <img src={img1} className="w-full h-full object-cover" alt={name1} />
+                    </div>
+                </div>
+
+                {/* Right Profile */}
+                <div className="w-[160px] h-[160px] sm:w-[320px] sm:h-[320px] rounded-full p-1 sm:p-2 bg-gradient-to-bl from-[#d32f2f] via-[#fff] to-[#d32f2f] shadow-[0_25px_50px_rgba(0,0,0,0.7)] z-30 transform hover:scale-105 transition-transform duration-500 -ml-10 sm:-ml-20 mt-16 sm:mt-24">
+                    <div className="w-full h-full rounded-full overflow-hidden border-[3px] sm:border-[6px] border-white bg-gray-100">
+                        <img src={img2} className="w-full h-full object-cover" alt={name2} />
+                    </div>
+                </div>
+             </div>
+
+             {/* Bottom Left: Floral Accent */}
+             <div className="absolute bottom-8 left-6 sm:bottom-14 sm:left-14 z-20 text-4xl sm:text-7xl filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)] transform -scale-x-100">
+                🌹🌿
+             </div>
+
+             {/* Bottom Right: Best Friend */}
+             <motion.div 
+               initial={{ opacity: 0, x: 30, rotate: -3 }}
+               whileInView={{ opacity: 1, x: 0, rotate: -3 }}
+               viewport={{ once: true }}
+               transition={{ duration: 1, delay: 0.8 }}
+               className="absolute bottom-10 right-8 sm:bottom-16 sm:right-16 z-20 flex items-center gap-1 sm:gap-3 opacity-90"
+             >
+                <span className="font-cursive text-2xl sm:text-5xl text-[#0a2342]">Best</span>
+                <span className="text-xl sm:text-4xl filter drop-shadow-md">🧸💞</span>
+                <span className="font-cursive text-2xl sm:text-5xl text-[#0a2342]">Friend</span>
+             </motion.div>
+          </motion.div>
+
+          {/* NEW SECTION: Green Border Scrapbook Layout */}
+          <motion.div 
+             initial={{ opacity: 0, y: 60 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true, margin: "-100px" }}
+             transition={{ duration: 1.2 }}
+             className="w-full mt-24 mb-16 bg-[#fdfbf7] relative min-h-[650px] sm:min-h-[1000px] border-[12px] sm:border-[24px] border-[#00c853] shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden"
+          >
+             
+             {/* Inner border for premium look */}
+             <div className="absolute inset-2 sm:inset-4 border-[2px] sm:border-[4px] border-dashed border-[#00c853] opacity-50 z-0 pointer-events-none"></div>
+
+             {/* Top Left: Quote & Characters */}
+             <div className="absolute top-[6%] left-[4%] sm:top-16 sm:left-16 w-[45%] sm:w-[320px] flex flex-col items-center z-20">
+                {/* Character Header */}
+                <div className="relative mb-2 sm:mb-6 flex justify-center w-full">
+                    <img src="https://ik.imagekit.io/19imy4f1u/lite_1777281639765_55fR5xSpF.png" className="w-[120px] sm:w-[180px] object-contain drop-shadow-md z-10" alt="Tom and Jerry" />
+                    <Heart className="absolute -top-1 sm:-top-4 -right-2 sm:right-8 w-4 h-4 sm:w-8 sm:h-8 text-[#ff1493] fill-[#ff1493] -rotate-12 z-0" />
+                    <Heart className="absolute top-4 sm:top-8 -right-4 sm:-right-4 w-3 h-3 sm:w-6 sm:h-6 text-[#ff1493] fill-[#ff1493] rotate-12 z-0" />
+                    <Heart className="absolute top-1 sm:top-2 right-6 sm:right-16 w-3 h-3 sm:w-5 sm:h-5 text-[#ff1493] fill-[#ff1493] -rotate-6 z-0" />
+                </div>
+                
+                <motion.p 
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="font-serif italic text-[11px] sm:text-[26px] text-[#1a1a1a] leading-relaxed sm:leading-snug text-center font-bold px-1 sm:px-2 drop-shadow-sm"
+                >
+                    "I love you not only for what you are, but for what I am when I am with you."
+                </motion.p>
+
+                {/* Decorative Nameplate */}
+                <div className="mt-4 sm:mt-10 w-[95%] h-6 sm:h-12 border-[1.5px] sm:border-[3px] border-[#1a1a1a] rounded-[50px] relative flex items-center justify-center bg-white shadow-sm">
+                    <span className="absolute -left-3 sm:-left-8 text-[#1a1a1a] opacity-80 transform -rotate-45 text-[10px] sm:text-2xl filter grayscale">🌿</span>
+                    <span className="font-serif font-black italic text-[10px] sm:text-[20px] text-[#1a1a1a] tracking-[0.15em] sm:tracking-[0.2em] relative z-10 uppercase">{name1.toUpperCase()}</span>
+                    {/* Stickers */}
+                    <span className="absolute -top-3 sm:-top-6 left-2 sm:left-4 text-[14px] sm:text-[32px] transform -rotate-12 z-20 drop-shadow-sm">👑</span>
+                    <span className="absolute -bottom-2 sm:-bottom-4 right-4 sm:right-8 text-[12px] sm:text-[24px] transform rotate-12 z-20 drop-shadow-sm">✨</span>
+                    <span className="absolute -right-3 sm:-right-8 text-[#1a1a1a] opacity-80 transform rotate-45 scale-x-[-1] text-[10px] sm:text-2xl filter grayscale">🌿</span>
+                </div>
+             </div>
+
+             {/* Top Right: Frame 1 */}
+             <div className="absolute top-[8%] right-[4%] sm:top-16 sm:right-16 w-[42%] sm:w-[360px] z-10 group">
+                <div className="border-[3px] sm:border-[8px] border-[#1a1a1a] p-1 sm:p-2 bg-white shadow-[4px_4px_8px_rgba(0,0,0,0.3)] sm:shadow-[15px_15px_25px_rgba(0,0,0,0.4)] aspect-square sm:aspect-[4/5] relative transform md:group-hover:scale-105 transition-transform duration-300">
+                    <div className="w-full h-full overflow-hidden border border-gray-200">
+                        <img src={img1} className="w-full h-full object-cover filter grayscale contrast-[1.1] brightness-[1.05]" alt={`${name1} Grayscale`} />
+                    </div>
+                </div>
+             </div>
+
+             {/* Center: Butterfly Trail */}
+             <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden mix-blend-multiply opacity-80">
+                 <span className="absolute top-[32%] left-[40%] text-xl sm:text-5xl filter grayscale contrast-200 -rotate-12">🦋</span>
+                 <span className="absolute top-[38%] left-[48%] text-2xl sm:text-6xl filter grayscale contrast-200 rotate-12">🦋</span>
+                 <span className="absolute top-[46%] left-[42%] text-base sm:text-3xl filter grayscale contrast-200 -rotate-45">🦋</span>
+                 <span className="absolute top-[52%] left-[50%] text-xl sm:text-5xl filter grayscale contrast-200 rotate-[30deg]">🦋</span>
+                 <span className="absolute top-[58%] left-[45%] text-3xl sm:text-[80px] filter grayscale contrast-200 -rotate-12 transform scale-x-[-1]">🦋</span>
+                 <span className="absolute top-[68%] left-[52%] text-lg sm:text-4xl filter grayscale contrast-200 rotate-[15deg]">🦋</span>
+                 <span className="absolute top-[75%] left-[48%] text-xs sm:text-2xl filter grayscale contrast-200 -rotate-[20deg] opacity-70">🦋</span>
+                 <span className="absolute top-[82%] left-[55%] text-[8px] sm:text-xl filter grayscale contrast-200 rotate-[45deg] opacity-50">🦋</span>
+             </div>
+
+             {/* Bottom Left: Frame 2 */}
+             <div className="absolute bottom-[6%] left-[4%] sm:bottom-16 sm:left-16 w-[45%] sm:w-[400px] z-10 group">
+                <div className="border-[3px] sm:border-[8px] border-[#1a1a1a] p-1 sm:p-2 bg-white shadow-[4px_4px_8px_rgba(0,0,0,0.3)] sm:shadow-[15px_15px_25px_rgba(0,0,0,0.4)] aspect-[3/4] sm:aspect-[4/5] relative transform md:group-hover:scale-105 transition-transform duration-300">
+                    <div className="w-full h-full overflow-hidden border border-gray-200">
+                        <img src={img2} className="w-full h-full object-cover filter grayscale contrast-[1.1] brightness-[1.05]" alt={`${name2} Grayscale`} />
+                    </div>
+                    <div className="absolute bottom-1 sm:bottom-4 left-0 w-full flex justify-center z-20">
+                        <span className="bg-black text-white text-[7px] sm:text-sm font-sans font-bold px-2 sm:px-4 py-0.5 sm:py-1 tracking-[0.2em] bg-opacity-90 shadow-md">FOREVERBESTIE</span>
+                    </div>
+                </div>
+             </div>
+
+             {/* Bottom Right: Cute Cats / Decorations */}
+             <div className="absolute bottom-[8%] right-[4%] sm:bottom-20 sm:right-16 w-[42%] sm:w-[320px] flex flex-col items-center justify-end z-20 h-[30%]">
+                <div className="flex justify-center items-center mb-2 sm:mb-8 relative w-full h-[60px] sm:h-[160px]">
+                    <span className="text-[45px] sm:text-[110px] absolute right-2 sm:right-16 top-0 rotate-12 z-0 drop-shadow-md">🐱</span>
+                    <span className="text-[55px] sm:text-[130px] absolute left-0 sm:left-10 bottom-0 -rotate-6 z-10 drop-shadow-lg filter hue-rotate-15">😽</span>
+                    <Heart className="absolute top-0 left-0 sm:top-6 sm:left-4 w-4 h-4 sm:w-8 sm:h-8 text-[#ff4081] fill-[#ff4081] -rotate-12 z-20 opacity-90" />
+                </div>
+                
+                {/* Decorative Nameplate */}
+                <div className="mt-3 sm:mt-6 w-[90%] h-6 sm:h-12 border-[1.5px] sm:border-[3px] border-[#1a1a1a] rounded-[50px] relative flex items-center justify-center bg-white shadow-sm">
+                    <span className="absolute -left-3 sm:-left-8 text-[#1a1a1a] opacity-80 transform -rotate-45 text-[10px] sm:text-2xl filter grayscale">🌿</span>
+                    <span className="font-serif font-black italic text-[10px] sm:text-[20px] text-[#1a1a1a] tracking-[0.15em] sm:tracking-[0.2em] relative z-10 uppercase">{name2.toUpperCase()}</span>
+                    {/* Stickers */}
+                    <span className="absolute -top-3 sm:-top-6 right-1 sm:right-2 text-[14px] sm:text-[30px] transform rotate-[20deg] z-20 drop-shadow-sm">🎀</span>
+                    <span className="absolute -bottom-2 sm:-bottom-4 left-2 sm:left-4 text-[12px] sm:text-[24px] transform -rotate-12 z-20 drop-shadow-sm">💫</span>
+                    <span className="absolute -right-3 sm:-right-8 text-[#1a1a1a] opacity-80 transform rotate-45 scale-x-[-1] text-[10px] sm:text-2xl filter grayscale">🌿</span>
+                </div>
+             </div>
+          </motion.div>
+
+          {/* NEW SECTION: Dark Neon Crowns Layout */}
+          <motion.div 
+              initial={{ opacity: 0, rotateX: -10, y: 60 }}
+              whileInView={{ opacity: 1, rotateX: 0, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1.5 }}
+              className="w-full mt-24 mb-16 bg-[#050505] relative min-h-[700px] sm:min-h-[1050px] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-6 sm:p-12 overflow-hidden flex flex-col justify-between"
+          >
+              
+              {/* Realistic Rose Decoration */}
+              <div className="absolute bottom-16 -left-12 sm:bottom-32 sm:left-10 z-30 transform -rotate-[25deg] hover:rotate-[0deg] transition-transform duration-700 origin-bottom-left">
+                  <span className="text-[180px] sm:text-[350px] filter drop-shadow-[0_15px_15px_rgba(0,0,0,0.9)] opacity-90 inline-block">🌹</span>
+              </div>
+              
+              {/* Top Left Circle Box (Ahad) */}
+              <div className="absolute top-20 left-10 sm:top-40 sm:left-32 group">
+                 {/* Hearts Arc */}
+                 <div className="absolute -top-16 sm:-top-24 left-1/2 transform -translate-x-1/2 w-48 sm:w-64 h-20 sm:h-32 -rotate-[15deg] z-30 pointer-events-none transition-transform duration-500 group-hover:scale-110">
+                    <span className="absolute top-8 left-2 sm:top-12 sm:left-4 text-2xl sm:text-4xl transform -rotate-45 drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💕</span>
+                    <span className="absolute top-4 left-10 sm:top-4 sm:left-14 text-3xl sm:text-5xl transform -rotate-12 drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💖</span>
+                    <span className="absolute -top-1 left-[5.5rem] sm:-top-4 sm:left-[7.5rem] text-4xl sm:text-6xl drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💗</span>
+                    <span className="absolute top-1 right-10 sm:top-2 sm:right-14 text-3xl sm:text-5xl transform rotate-12 drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💓</span>
+                    <span className="absolute top-4 right-2 sm:top-8 sm:right-4 text-2xl sm:text-4xl transform rotate-45 drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💞</span>
+                 </div>
+                 
+                 {/* Gold Crown */}
+                 <div className="absolute -top-12 sm:-top-20 -left-6 sm:-left-12 transform -rotate-[25deg] z-20">
+                     <span className="text-[80px] sm:text-[140px] drop-shadow-[0_10px_15px_rgba(255,215,0,0.5)]">👑</span>
+                 </div>
+
+                 {/* Neon Frame Profile */}
+                 <div className="w-48 h-48 sm:w-[350px] sm:h-[350px] rounded-full border-[3px] border-white shadow-[0_0_20px_#ff00ff,inset_0_0_15px_#ff00ff] relative z-10 bg-transparent flex items-center justify-center group-hover:shadow-[0_0_40px_#ff00ff,inset_0_0_30px_#ff00ff] transition-shadow duration-500">
+                    <div className="w-[92%] h-[92%] rounded-full overflow-hidden opacity-95 border-[2px] border-white/20">
+                        <img src={img1} className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-700" alt={name1} />
+                    </div>
+                    {/* Glowing Name Tag */}
+                    <div className="absolute -bottom-6 sm:-bottom-12 font-sans font-black italic text-white tracking-[0.3em] uppercase drop-shadow-[0_0_15px_#ff00ff] text-xl sm:text-4xl">
+                        {name1.toUpperCase()}
+                    </div>
+                 </div>
+              </div>
+
+              {/* Bottom Right Circle Box (Saqib) */}
+              <div className="absolute bottom-32 right-10 sm:bottom-48 sm:right-32 group">
+                 {/* Hearts Arc */}
+                 <div className="absolute -top-16 sm:-top-24 left-1/2 transform -translate-x-1/2 w-48 sm:w-64 h-20 sm:h-32 rotate-[15deg] z-30 pointer-events-none transition-transform duration-500 group-hover:scale-110 ml-4">
+                    <span className="absolute top-2 -left-2 sm:top-2 sm:-left-2 text-xl sm:text-3xl transform -rotate-45 drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💕</span>
+                    <span className="absolute -top-1 left-6 sm:-top-2 sm:left-10 text-2xl sm:text-4xl transform -rotate-12 drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💖</span>
+                    <span className="absolute -top-4 left-[4.5rem] sm:-top-8 sm:left-[6.5rem] text-3xl sm:text-5xl drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💗</span>
+                    <span className="absolute -top-1 right-10 sm:-top-2 sm:right-14 text-2xl sm:text-4xl transform rotate-12 drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💓</span>
+                    <span className="absolute top-4 right-2 sm:top-8 sm:right-2 text-xl sm:text-3xl transform rotate-[30deg] drop-shadow-[0_0_5px_rgba(255,105,180,0.8)]">💞</span>
+                 </div>
+                 
+                 {/* Gold Crown */}
+                 <div className="absolute -top-10 sm:-top-16 -right-6 sm:-right-8 transform rotate-[25deg] z-20">
+                     <span className="text-[80px] sm:text-[140px] drop-shadow-[0_10px_15px_rgba(255,215,0,0.5)] inline-block scale-x-[-1]">👑</span>
+                 </div>
+
+                 {/* Neon Frame Profile */}
+                 <div className="w-48 h-48 sm:w-[350px] sm:h-[350px] rounded-full border-[3px] border-white shadow-[0_0_20px_#ff00ff,inset_0_0_15px_#ff00ff] relative z-10 bg-transparent flex items-center justify-center group-hover:shadow-[0_0_40px_#ff00ff,inset_0_0_30px_#ff00ff] transition-shadow duration-500">
+                    <div className="w-[92%] h-[92%] rounded-full overflow-hidden opacity-95 border-[2px] border-white/20">
+                        <img src={img2} className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-700" alt={name2} />
+                    </div>
+                    {/* Glowing Name Tag */}
+                    <div className="absolute -bottom-6 sm:-bottom-12 font-sans font-black italic text-white tracking-[0.3em] uppercase drop-shadow-[0_0_15px_#ff00ff] text-xl sm:text-4xl">
+                        {name2.toUpperCase()}
+                    </div>
+                 </div>
+              </div>
+
+          </motion.div>
+
+          {/* Decorative Music Player & Quotes Section */}
+          <motion.div 
+             initial={{ opacity: 0, scale: 0.8 }}
+             whileInView={{ opacity: 1, scale: 1 }}
+             viewport={{ once: true, margin: "-50px" }}
+             transition={{ duration: 1.2, delay: 0.2 }}
+             className="w-full mt-24 mb-8 flex flex-col lg:flex-row justify-between items-center lg:items-end relative gap-12 text-[#1a1a1a] px-4"
+          >
+             
+             {/* Left Quote */}
+             <motion.div 
+               initial={{ opacity: 0, x: -30 }}
+               whileInView={{ opacity: 1, x: 0 }}
+               viewport={{ once: true }}
+               transition={{ duration: 0.8, delay: 0.3 }}
+               className="flex flex-col items-center lg:items-start opacity-90 text-center lg:text-left"
+             >
+               <span className="font-serif font-black tracking-widest text-xl sm:text-2xl">CHOCOLATE BOY</span>
+               <p className="text-[11px] sm:text-xs font-bold tracking-tight mt-1">I DON'T HAVE TIME TO HATE PEOPLE</p>
+               <p className="text-[10px] sm:text-[11px] font-bold tracking-tight lg:ml-4">BCZ.. I'M BUSY LOVING PEOPLE WHO LOVE ME</p>
+               <div className="flex gap-1.5 mt-2 lg:ml-4">
+                  {[...Array(8)].map((_, i) => <div key={i} className="w-1.5 h-1.5 bg-[#1a1a1a] rounded-full"></div>)}
+               </div>
+             </motion.div>
+
+             {/* Center Music Player & Crown */}
+             <div className="flex flex-col items-center gap-8 opacity-90">
+                <Crown strokeWidth={1.5} className="w-20 h-20 sm:w-28 sm:h-28 stroke-[#1a1a1a] drop-shadow-md" />
+                
+                <div className="w-[200px] sm:w-[320px] flex flex-col gap-4">
+                   <div className="flex items-center gap-3 text-xs font-mono font-medium">
+                     <span>0:00</span>
+                     <div className="flex-1 h-1 bg-gray-300 rounded-full relative">
+                        <div className="absolute top-0 left-0 h-full w-1/3 bg-[#1a1a1a] rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]"></div>
+                        <div className="absolute top-1/2 left-1/3 transform -translate-y-1/2 w-3.5 h-3.5 bg-[#1a1a1a] rounded-full shadow-md"></div>
+                     </div>
+                     <span>3:45</span>
+                   </div>
+                   <div className="flex items-center justify-between px-2">
+                     <Heart strokeWidth={2.5} className="w-4 h-4 text-gray-400" />
+                     <div className="flex items-center gap-5">
+                        <SkipBack className="w-6 h-6 fill-[#1a1a1a] text-[#1a1a1a]" />
+                        <Play className="w-10 h-10 fill-[#1a1a1a] text-[#1a1a1a]" />
+                        <SkipForward className="w-6 h-6 fill-[#1a1a1a] text-[#1a1a1a]" />
+                     </div>
+                     <Volume2 strokeWidth={2.5} className="w-4 h-4 text-gray-400" />
+                   </div>
+                </div>
+
+                <div className="relative mt-4">
+                  <Heart fill="currentColor" strokeWidth={0} className="w-24 h-24 text-[#1a1a1a] rotate-12" />
+                  <Crown strokeWidth={3} className="w-10 h-10 stroke-[#1a1a1a] fill-white absolute -top-5 -right-3 rotate-[35deg]" />
+                </div>
+             </div>
+
+             {/* Right Quote */}
+             <motion.div 
+               initial={{ opacity: 0, x: 30 }}
+               whileInView={{ opacity: 1, x: 0 }}
+               viewport={{ once: true }}
+               transition={{ duration: 0.8, delay: 0.5 }}
+               className="flex flex-col items-center lg:items-end opacity-90 text-center lg:text-right"
+             >
+               <span className="font-serif font-black tracking-widest text-xl sm:text-2xl">FAMOUS BOY</span>
+               <p className="text-[11px] sm:text-xs font-bold tracking-tight mt-1">I DON'T HAVE TIME TO HATE PEOPLE</p>
+               <p className="text-[10px] sm:text-[11px] font-bold tracking-tight lg:mr-4">BCZ.. I'M BUSY LOVING PEOPLE WHO LOVE ME</p>
+               <div className="flex gap-1.5 mt-2 lg:mr-4">
+                  {[...Array(8)].map((_, i) => <div key={i} className="w-1.5 h-1.5 bg-[#1a1a1a] rounded-full"></div>)}
+               </div>
+             </motion.div>
+          </motion.div>
+
+          {/* Create Your Own Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="w-full flex justify-center pb-12 z-20 relative"
+          >
+            <button
+               onClick={() => setIsGeneratorOpen(true)}
+               className="bg-white/90 backdrop-blur-md border-2 border-pink-400 text-pink-600 font-bold py-3.5 px-8 rounded-full shadow-[0_10px_25px_rgba(244,63,94,0.3)] hover:scale-105 hover:bg-pink-50 hover:shadow-[0_15px_35px_rgba(244,63,94,0.4)] transition-all duration-300 flex items-center gap-3 group"
+            >
+               <span>Create Your Own Link</span>
+               <span className="text-xl group-hover:rotate-12 transition-transform">✨</span>
+            </button>
+          </motion.div>
+
+        </motion.div>
+
+      </div>
+    </div>
   );
 }
+
